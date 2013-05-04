@@ -142,7 +142,6 @@ void TcpGateway::setDebug (const bool &val)
  */
 void TcpGateway::newConnectionSlot()
 {
-    qDebug() << "newConnectionSlot";
     while (hasPendingConnections())
     {
         QTcpSocket *socket = nextPendingConnection();
@@ -150,7 +149,6 @@ void TcpGateway::newConnectionSlot()
         {
             if (m_clients.count() < MAX_CLIENTS)
             {
-                qDebug() << "Insert New Connection";
                 ClientOven *client = new ClientOven(this);
                 client->setSocketDescriptor(socket->socketDescriptor());
                 m_clients.insert(socket, client);
@@ -163,7 +161,7 @@ void TcpGateway::newConnectionSlot()
             }
             else
             {
-                qDebug() << "Close New Connection";
+                debug("Close New Connection");
                 socket->close();
             }
         }

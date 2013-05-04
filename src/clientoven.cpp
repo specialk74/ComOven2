@@ -3,7 +3,6 @@
 ClientOven::ClientOven(QObject *parent) :
     QTcpSocket(parent)
 {
-    qDebug() << "CTor ClientOven";
     // Quando mi arrivano dei dati dal client
     m_statoParser = STATO_DLE_STX;
     connect (this, SIGNAL(readyRead()), this, SLOT(fromClientsSlot()));

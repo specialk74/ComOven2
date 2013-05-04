@@ -20,7 +20,8 @@ SOURCES +=  tcpgatewaytest.cpp \
     QtTestUtil/SimpleChecker.cpp \
     ../src/tcpgateway.cpp \
     ../src/clientoven.cpp \
-    ../src/utils.cpp
+    ../src/utils.cpp \
+    utilstest.cpp
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 HEADERS += \

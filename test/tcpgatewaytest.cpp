@@ -3,6 +3,7 @@
 #include <QSignalSpy>
 #include "QtTestUtil/QtTestUtil.h"
 #include <QTcpSocket>
+#include <QThread>
 
 #include "tcpgateway.h"
 #include "clientoven.h"
@@ -44,9 +45,8 @@ private Q_SLOTS:
         QTcpSocket mysocket;
         mysocket.connectToHost("127.0.0.1", port);
 
-        QVERIFY( mysocket.waitForConnected( 5000 ) );
+        QVERIFY( mysocket.waitForConnected( 1000 ) );
         QVERIFY( mysocket.state() == QTcpSocket::ConnectedState );
-        mysocket.close();
         delete TcpGateway::Instance();
     }
 
@@ -54,40 +54,39 @@ private Q_SLOTS:
     {
         const int port = 6800;
 
-        TcpGateway::Instance()->setDebug(true);
         TcpGateway::Instance()->setPort (port);
         TcpGateway::Instance()->startListen();
-        QList<QTcpSocket*> listSocket;
 
+        QList<QTcpSocket*> m_list;
         qDebug() << "Provo il massimo delle connessioni";
+        QTcpSocket *mysocket;
         for (int i = 0; i < MaxConnessioni; i++)
         {
-            QTcpSocket *mysocket = new QTcpSocket;
+            mysocket = new QTcpSocket (this);
+            m_list.append(mysocket);
             mysocket->connectToHost("127.0.0.1", port);
+            qApp->processEvents();
 
-            QVERIFY( mysocket->waitForConnected( 5000 ) );
+            QVERIFY( mysocket->waitForConnected( 100 ) );
             QVERIFY( mysocket->state() == QTcpSocket::ConnectedState );
-            listSocket.append(mysocket);
-            qDebug() << "Connessione #" << i+1;
         }
-        qDebug() << "Forzo il numero delle connessioni";
         {
-            QTcpSocket mysocket;
-            mysocket.connectToHost("127.0.0.1", port);
-
-            QVERIFY( mysocket.waitForDisconnected( 5000 ) );
-            qDebug() << mysocket.state();
-            QVERIFY( mysocket.state() == QTcpSocket::UnconnectedState);
-
-            mysocket.close();
+            mysocket = new QTcpSocket (this);
+            m_list.append(mysocket);
+            mysocket->connectToHost("127.0.0.1", port);
+            QVERIFY( mysocket->waitForConnected( 1000 ) );
+            // Devo inserire piu' processEvents altrimenti non aggiorna la situazione del socket
+            qApp->processEvents();
+            qApp->processEvents();
+            qApp->processEvents();
+            qApp->processEvents();
+            QVERIFY( mysocket->state() == QTcpSocket::UnconnectedState );
         }
 
-        qDebug() << "Libero la RAM";
-        {
-            while (listSocket.count())
-                delete listSocket.first();
+        while (m_list.count()) {
+            delete m_list.first();
+            m_list.removeFirst();
         }
-        delete TcpGateway::Instance();
     }
 };
 
