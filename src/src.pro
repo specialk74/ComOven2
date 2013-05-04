@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core
+QT       += core network
 
 QT       -= gui
 
@@ -15,4 +15,12 @@ CONFIG   -= app_bundle
 TEMPLATE = app
 
 
-SOURCES += main.cpp
+SOURCES += main.cpp \
+    tcpgateway.cpp \
+    clientoven.cpp \
+    utils.cpp
+
+HEADERS += \
+    tcpgateway.h \
+    clientoven.h \
+    utils.h

@@ -3,9 +3,11 @@
 #include <QRegExp>
 #include <QCoreApplication>
 
+#include "tcpgateway.h"
+
 const char projectName[] = "ComOven2";
 const int portServer = 6800;
-const char version[] = "Versione: 1.4";
+const char version[] = "Versione: 1.5";
 
 void usage (void)
 {
@@ -21,7 +23,7 @@ int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
 
-    int port = portServer;
+    quint16 port = portServer;
     bool debug = false;
     bool printUsage = false;
 
@@ -38,14 +40,11 @@ int main(int argc, char *argv[])
     for (int i = 1; i < args.size(); ++i) {
         if ((rxArgPort.indexIn(args.at(i)) != -1 )) {
             port =  rxArgPort.cap(1).toInt();
-            qDebug() << i << ":" << args.at(i) << rxArgPort.cap(1) << port;
         }
         else if ((rxArgPortLong.indexIn(args.at(i)) != -1 )) {
             port =  rxArgPortLong.cap(1).toInt();
-            qDebug() << i << ":" << args.at(i) << rxArgPortLong.cap(1) << port;
         }
         else if ((rxArgDebug.indexIn(args.at(i)) != -1) || (rxArgDebugLong.indexIn(args.at(i)) != -1)) {
-            qDebug() << i << ":" << args.at(i) << "Enable Debug";
             debug = true;
         }
         else if ((rxArgVersion.indexIn(args.at(i)) != -1) || (rxArgVersionLong.indexIn(args.at(i)) != -1)) {
@@ -64,6 +63,10 @@ int main(int argc, char *argv[])
 
     if (printUsage)
         usage();
+
+    TcpGateway::Instance()->setDebug (debug);
+    TcpGateway::Instance()->setPort(port);
+    TcpGateway::Instance()->startListen();
 
     return app.exec();
 }
