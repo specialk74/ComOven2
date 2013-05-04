@@ -7,7 +7,7 @@
 
 const char projectName[] = "ComOven2";
 const int portServer = 6800;
-const char version[] = "Versione: 1.5";
+const char version[] = "Versione: 1.6";
 
 void usage (void)
 {

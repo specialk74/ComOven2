@@ -1,17 +1,18 @@
 #ifndef TCPGATEWAY_H
 #define TCPGATEWAY_H
 
+#include <QMap>
 #include <QTcpServer>
-#include <QList>
 
-class QTcpSocket;
 class ClientOven;
+class QTcpSocket;
 
 class TcpGateway : public QTcpServer
 {
     Q_OBJECT
 public:
     static TcpGateway * Instance(QObject *parent = 0);
+    ~TcpGateway();
     int getMaxNumClients ();
 
     void setDebug (const bool &val);
@@ -29,12 +30,13 @@ signals:
     void toClient (const QByteArray &);
 
 protected slots:
-    void newConnectionSlot(void);
-    void disconnectedSlot (void);
+    void newConnectionSlot();
+    void disconnectedSlot();
 
 protected:
     explicit TcpGateway(QObject *parent);
     static TcpGateway * m_Instance;
+    //void incomingConnection(int handle);
 
     void debug (const QString &testo);
 

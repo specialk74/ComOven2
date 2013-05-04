@@ -22,17 +22,31 @@ TcpGateway * TcpGateway::Instance(QObject *parent)
     return m_Instance;
 }
 
+/*!
+ * \brief TcpGateway::TcpGateway - CTor
+ * \param parent
+ *
+ * Purtroppo NON posso limitare il numero massimo di connessioni alla fonte: questo dipende dal S.O.
+ * Posso solo chiudere la connessione se arrivo al limite massimo
+ */
 TcpGateway::TcpGateway(QObject *parent) :
     QTcpServer(parent)
 {
     m_Instance = this;
-    setMaxPendingConnections (MAX_CLIENTS);
 
     m_port = 0;
     m_debug = false;
 
     // Ogni nuova connessione da parte dei clients, viene gestita dallo slot "newConnectionSlot"
     connect (this, SIGNAL(newConnection()), this, SLOT(newConnectionSlot()));
+}
+
+/*!
+ * \brief TcpGateway::~TcpGateway - DTor
+ */
+TcpGateway::~TcpGateway()
+{
+    m_Instance = NULL;
 }
 
 /*!
@@ -48,7 +62,7 @@ bool TcpGateway::startListen(void)
         return false;
     }
 
-    QString testo = QString ("Server ComOven2 listen on port %1").arg(m_port);
+    QString testo = QString ("Server ComOven2 listen on port \"%1\"").arg(m_port);
     debug(testo);
 
     return listen(QHostAddress::Any, m_port);
@@ -61,6 +75,19 @@ void TcpGateway::debug (const QString &testo)
         qDebug() << headDebug << qPrintable(testo);
 }
 
+#if 0
+void TcpGateway::incomingConnection(int handle)
+{
+    qDebug() << "incomingConnection";
+    if (m_clients.count() < MAX_CLIENTS)
+    {
+        QTcpSocket *socket = new QTcpSocket;
+        socket->setSocketDescriptor(handle);
+        addPendingConnection(socket);
+    }
+//    emit newConnection();
+}
+#endif
 /*************************************************************
  *
  *                        GET/SET
@@ -113,23 +140,32 @@ void TcpGateway::setDebug (const bool &val)
  *  Vengono inserite dentro la lista m_clients in modo che quando dovro' mandare un messaggio
  *  avro' un riferimento.
  */
-void TcpGateway::newConnectionSlot(void)
+void TcpGateway::newConnectionSlot()
 {
-    debug("New Connection");
+    qDebug() << "newConnectionSlot";
     while (hasPendingConnections())
     {
         QTcpSocket *socket = nextPendingConnection();
         if (socket)
         {
-            ClientOven *client = new ClientOven(this);
-            client->setSocketDescriptor(socket->socketDescriptor());
-            m_clients.insert(socket, client);
-            // Quando il client si disconnette
-            connect (socket, SIGNAL(disconnected()), this, SLOT(disconnectedSlot()));
-            // Quando devo spedire un messaggio al Client
-            connect (this, SIGNAL(toClient(QByteArray)), client, SLOT(toClient(QByteArray)));
-            // Quando devo spedire i dati al Bus
-            connect (client, SIGNAL(toBusSignal(QByteArray)), this, SIGNAL(toBusSignal(QByteArray)));
+            if (m_clients.count() < MAX_CLIENTS)
+            {
+                qDebug() << "Insert New Connection";
+                ClientOven *client = new ClientOven(this);
+                client->setSocketDescriptor(socket->socketDescriptor());
+                m_clients.insert(socket, client);
+                // Quando il client si disconnette
+                connect (socket, SIGNAL(disconnected()), this, SLOT(disconnectedSlot()));
+                // Quando devo spedire un messaggio al Client
+                connect (this, SIGNAL(toClient(QByteArray)), client, SLOT(toClient(QByteArray)));
+                // Quando devo spedire i dati al Bus
+                connect (client, SIGNAL(toBusSignal(QByteArray)), this, SIGNAL(toBusSignal(QByteArray)));
+            }
+            else
+            {
+                qDebug() << "Close New Connection";
+                socket->close();
+            }
         }
     }
 }
@@ -149,11 +185,12 @@ void TcpGateway::fromBusSlot(const QByteArray &bufferBus)
 /*!
  * \brief TcpGateway::disconnectedSlot - Slot per eliminare il riferimento al client che era connesso
  */
-void TcpGateway::disconnectedSlot (void)
+void TcpGateway::disconnectedSlot ()
 {
     QTcpSocket *socket = (QTcpSocket *) sender();
+    QString testo = QString ("Client %1 disconnected").arg(socket->peerAddress().toString());
+    debug(testo);
     ClientOven *client = m_clients[socket];
     m_clients.remove(socket);
     delete client;
-    delete socket;
 }

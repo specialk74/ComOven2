@@ -3,6 +3,7 @@
 ClientOven::ClientOven(QObject *parent) :
     QTcpSocket(parent)
 {
+    qDebug() << "CTor ClientOven";
     // Quando mi arrivano dei dati dal client
     m_statoParser = STATO_DLE_STX;
     connect (this, SIGNAL(readyRead()), this, SLOT(fromClientsSlot()));
@@ -14,6 +15,7 @@ ClientOven::ClientOven(QObject *parent) :
  */
 void ClientOven::fromClientsSlot()
 {
+    qDebug("fromClientsSlot");
     QByteArray buffer = readAll();
     int start = 0;
     int end = buffer.length();
@@ -36,5 +38,7 @@ void ClientOven::fromClientsSlot()
  */
 void ClientOven::toClient (const QByteArray &buffer)
 {
+    qDebug("toClient");
+
     write(buffer);
 }

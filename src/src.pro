@@ -9,7 +9,7 @@ QT       += core network
 QT       -= gui
 
 TARGET = src
-CONFIG   += console
+CONFIG   += console debug
 CONFIG   -= app_bundle
 
 TEMPLATE = app
