@@ -32,9 +32,28 @@ void AbstractDevice::setVersioneSwMinor (const quint8 &val)
     m_versioneMinor = val;
 }
 
-void AbstractDevice::toClients (const QByteArray &buffer)
+union lunghezza {
+    quint32 u32;
+    quint8 dato[4];
+} ;
+
+/*!
+ * \brief AbstractDevice::toClients
+ * \param buffer - Sono solo messaggi CAN
+ */
+void AbstractDevice::toClients_CAN (const QByteArray &buffer)
 {
-    emit toClientsSignal(buffer);
+    QByteArray bufferToClients;
+    bufferToClients.append((char) TIPO_CAN_MSG);
+    lunghezza lng;
+    lng.u32 = 17;
+    bufferToClients.append(lng.dato[0]);
+    bufferToClients.append(lng.dato[1]);
+    bufferToClients.append(lng.dato[2]);
+    bufferToClients.append(lng.dato[3]);
+    bufferToClients.append(buffer);
+
+    emit toClientsSignal(bufferToClients);
 }
 
 /*!
@@ -51,18 +70,15 @@ void AbstractDevice::fromClientSlot (const QByteArray &buffer)
     }
 
     // Recupero la lunghezza del messaggio dai dati
-    union {
-            quint32 u32;
-            quint8 dato[4];
-        } lunghezza;
 
+    // Funziona?
+    lunghezza lng;
+    lng.dato[0] = buffer[1];
+    lng.dato[1] = buffer[2];
+    lng.dato[2] = buffer[3];
+    lng.dato[3] = buffer[4];
 
-    lunghezza.dato[0] = buffer[1];
-    lunghezza.dato[1] = buffer[2];
-    lunghezza.dato[2] = buffer[3];
-    lunghezza.dato[3] = buffer[4];
-
-    if (lunghezza.u32 != (quint32) buffer.length())
+    if (lng.u32 != (quint32) buffer.length())
     {
         debug ("Lunghezza Messaggio errata");
         return;
@@ -87,11 +103,10 @@ void AbstractDevice::fromClientSlot (const QByteArray &buffer)
         msgToClients.versione_major = m_versioneMajor;
         msgToClients.versione_minor = m_versioneMinor;
         msgToClients.com_stat = getComStatFromDevice();
-        msgToClients.versione_device_major = getVersioneMajorFromDevice();
-        msgToClients.versione_device_minor = getVersioneMinorFromDevice();
+        getVersionFromDevice(msgToClients.versione_device_major, msgToClients.versione_device_minor);
 
         bufferToClients.fromRawData((const char *) &msgToClients, 11);
-        toClients(bufferToClients);
+        emit toClientsSignal(bufferToClients);
     }
         break;
 

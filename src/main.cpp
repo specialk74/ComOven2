@@ -4,6 +4,7 @@
 #include <QCoreApplication>
 
 #include "tcpgateway.h"
+#include "rs232device.h"
 
 const char projectName[] = "ComOven2";
 const int portServer = 6800;
@@ -67,6 +68,8 @@ int main(int argc, char *argv[])
     TcpGateway::Instance()->setDebug (debug);
     TcpGateway::Instance()->setPort(port);
     TcpGateway::Instance()->startListen();
+
+    Rs232Device::Instance();
 
     return app.exec();
 }

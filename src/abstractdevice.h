@@ -37,12 +37,12 @@ protected:
     virtual void toDevice (const QByteArray &buffer) = 0;
     virtual quint8 getTipoIdFromDevice() = 0;
     virtual quint8 getComStatFromDevice() = 0;
-    virtual quint8 getVersioneMajorFromDevice () = 0;
-    virtual quint8 getVersioneMinorFromDevice () = 0;
+    virtual void getVersionFromDevice (quint8 & major, quint8 & minor) = 0;
     virtual void debug (const QString &testo);
 
-    void toClients (const QByteArray &buffer);
+    void toClients_CAN (const QByteArray &buffer);
 
+private:
     bool m_debug;
 
     quint8 m_versioneMajor;
