@@ -5,7 +5,7 @@
 
 #define MAX_CLIENTS 16
 
-const char headDebug[] = "[TcpGateway]";
+static const char headDebug[] = "[TcpGateway]";
 
 TcpGateway * TcpGateway::m_Instance = NULL;
 

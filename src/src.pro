@@ -18,9 +18,11 @@ TEMPLATE = app
 SOURCES += main.cpp \
     tcpgateway.cpp \
     clientoven.cpp \
-    utils.cpp
+    utils.cpp \
+    abstractdevice.cpp
 
 HEADERS += \
     tcpgateway.h \
     clientoven.h \
-    utils.h
+    utils.h \
+    abstractdevice.h

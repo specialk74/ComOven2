@@ -156,11 +156,11 @@ private Q_SLOTS:
 
         encode(bufferIn, bufferOut);
         QVERIFY(bufferOut.length() == 5);
-        QVERIFY(bufferOut[0] == DLE);
-        QVERIFY(bufferOut[1] == STX);
-        QVERIFY(bufferOut[2] == STX);
-        QVERIFY(bufferOut[3] == DLE);
-        QVERIFY(bufferOut[4] == ETX);
+        QVERIFY(bufferOut[0] == (char) DLE);
+        QVERIFY(bufferOut[1] == (char) STX);
+        QVERIFY(bufferOut[2] == (char) STX);
+        QVERIFY(bufferOut[3] == (char) DLE);
+        QVERIFY(bufferOut[4] == (char) ETX);
     }
 
     void testEncode2()
@@ -171,12 +171,12 @@ private Q_SLOTS:
 
         encode(bufferIn, bufferOut);
         QVERIFY(bufferOut.length() == 6);
-        QVERIFY(bufferOut[0] == DLE);
-        QVERIFY(bufferOut[1] == STX);
-        QVERIFY(bufferOut[2] == DLE);
-        QVERIFY(bufferOut[3] == DLE);
-        QVERIFY(bufferOut[4] == DLE);
-        QVERIFY(bufferOut[5] == ETX);
+        QVERIFY(bufferOut[0] == (char) DLE);
+        QVERIFY(bufferOut[1] == (char) STX);
+        QVERIFY(bufferOut[2] == (char) DLE);
+        QVERIFY(bufferOut[3] == (char) DLE);
+        QVERIFY(bufferOut[4] == (char) DLE);
+        QVERIFY(bufferOut[5] == (char) ETX);
     }
 };
 
