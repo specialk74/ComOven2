@@ -24,7 +24,7 @@ void ClientOven::fromClientsSlot()
         if (decode (buffer, m_buffer, start, m_statoParser))
         {
             // E' stato trovato un messaggio valido completo: mando un segnale per gestirlo
-            emit toBusSignal(m_buffer);
+            emit toDeviceSignal(m_buffer);
             // Ripulisco il buffer perche' non serve piu'
             m_buffer.clear();
         }
@@ -35,7 +35,7 @@ void ClientOven::fromClientsSlot()
  * \brief ClientOven::toClient
  * \param buffer - buffer da spedire al Client: non devo fare nulla perche' e' gia' stato codificato da TcpGateway
  */
-void ClientOven::toClient (const QByteArray &buffer)
+void ClientOven::toClientSlot (const QByteArray &buffer)
 {
     qDebug("toClient");
 

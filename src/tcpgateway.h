@@ -23,11 +23,11 @@ public:
     bool startListen (void);
 
 public slots:
-    void fromBusSlot (const QByteArray &);
+    void fromDeviceSlot (const QByteArray &bufferDevice);
 
 signals:
-    void toBusSignal (const QByteArray &);
-    void toClient (const QByteArray &);
+    void toDeviceSignal (const QByteArray &);
+    void toClientSignal (const QByteArray &);
 
 protected slots:
     void newConnectionSlot();

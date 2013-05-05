@@ -155,9 +155,9 @@ void TcpGateway::newConnectionSlot()
                 // Quando il client si disconnette
                 connect (socket, SIGNAL(disconnected()), this, SLOT(disconnectedSlot()));
                 // Quando devo spedire un messaggio al Client
-                connect (this, SIGNAL(toClient(QByteArray)), client, SLOT(toClient(QByteArray)));
-                // Quando devo spedire i dati al Bus
-                connect (client, SIGNAL(toBusSignal(QByteArray)), this, SIGNAL(toBusSignal(QByteArray)));
+                connect (this, SIGNAL(toClientSignal(QByteArray)), client, SLOT(toClientSlot(QByteArray)));
+                // Quando devo spedire i dati al Device
+                connect (client, SIGNAL(toDeviceSignal(QByteArray)), this, SIGNAL(toDeviceSignal(QByteArray)));
             }
             else
             {
@@ -169,15 +169,15 @@ void TcpGateway::newConnectionSlot()
 }
 
 /*!
- * \brief TcpGateway::fromBus - Slot per gestire i dati che mi arrivano dal Bus
+ * \brief TcpGateway::fromDeviceSlot - Slot per gestire i dati che mi arrivano dal Device
  */
-void TcpGateway::fromBusSlot(const QByteArray &bufferBus)
+void TcpGateway::fromDeviceSlot(const QByteArray &bufferDevice)
 {
     QByteArray buffer;
     // Lo trasformo in modo che i Client possano leggerlo corretamente
-    encode (bufferBus, buffer);
+    encode (bufferDevice, buffer);
     // In questo modo lo spedisco a tutti i Clients collegati
-    emit toClient(buffer);
+    emit toClientSignal(buffer);
 }
 
 /*!

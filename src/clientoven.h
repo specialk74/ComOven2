@@ -13,10 +13,10 @@ public:
     explicit ClientOven(QObject *parent = 0);
     
 signals:
-    void toBusSignal (const QByteArray &);
+    void toDeviceSignal (const QByteArray &);
 
 public slots:
-    void toClient (const QByteArray &buffer);
+    void toClientSlot (const QByteArray &buffer);
     
 protected slots:
     void fromClientsSlot();
