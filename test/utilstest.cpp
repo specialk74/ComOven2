@@ -23,11 +23,11 @@ private Q_SLOTS:
         QByteArray bufferIn;
         bufferIn.append(DLE);
         QByteArray bufferOut;
-        STATO_DECODER stato = STATO_DLE_STX;
+        STATO_DECODER_TCPIP_MSG stato = STATO_TCPIP_DLE_STX;
         int start = 0;
 
-        QVERIFY(decode(bufferIn, bufferOut, start, stato) == false);
-        QVERIFY(stato == STATO_STX);
+        QVERIFY(decodeTcpIpMsg(bufferIn, bufferOut, start, stato) == false);
+        QVERIFY(stato == STATO_TCPIP_STX);
         QVERIFY(bufferOut.length() == 0);
         QVERIFY(start == 1);
     }
@@ -38,11 +38,11 @@ private Q_SLOTS:
         bufferIn.append(DLE);
         bufferIn.append(STX);
         QByteArray bufferOut;
-        STATO_DECODER stato = STATO_DLE_STX;
+        STATO_DECODER_TCPIP_MSG stato = STATO_TCPIP_DLE_STX;
         int start = 0;
 
-        QVERIFY(decode(bufferIn, bufferOut, start, stato) == false);
-        QVERIFY(stato == STATO_DATO);
+        QVERIFY(decodeTcpIpMsg(bufferIn, bufferOut, start, stato) == false);
+        QVERIFY(stato == STATO_TCPIP_DATO);
         QVERIFY(bufferOut.length() == 0);
         QVERIFY(start == 2);
     }
@@ -54,11 +54,11 @@ private Q_SLOTS:
         bufferIn.append(STX);
         bufferIn.append(DLE);
         QByteArray bufferOut;
-        STATO_DECODER stato = STATO_DLE_STX;
+        STATO_DECODER_TCPIP_MSG stato = STATO_TCPIP_DLE_STX;
         int start = 0;
 
-        QVERIFY(decode(bufferIn, bufferOut, start, stato) == false);
-        QVERIFY(stato == STATO_ETX);
+        QVERIFY(decodeTcpIpMsg(bufferIn, bufferOut, start, stato) == false);
+        QVERIFY(stato == STATO_TCPIP_ETX);
         QVERIFY(bufferOut.length() == 0);
         QVERIFY(start == 3);
     }
@@ -71,11 +71,11 @@ private Q_SLOTS:
         bufferIn.append(DLE);
         bufferIn.append(ETX);
         QByteArray bufferOut;
-        STATO_DECODER stato = STATO_DLE_STX;
+        STATO_DECODER_TCPIP_MSG stato = STATO_TCPIP_DLE_STX;
         int start = 0;
 
-        QVERIFY(decode(bufferIn, bufferOut, start, stato) == true);
-        QVERIFY(stato == STATO_DLE_STX);
+        QVERIFY(decodeTcpIpMsg(bufferIn, bufferOut, start, stato) == true);
+        QVERIFY(stato == STATO_TCPIP_DLE_STX);
         QVERIFY(bufferOut.length() == 0);
         QVERIFY(start == 4);
     }
@@ -89,11 +89,11 @@ private Q_SLOTS:
         bufferIn.append(DLE);
         bufferIn.append(ETX);
         QByteArray bufferOut;
-        STATO_DECODER stato = STATO_DLE_STX;
+        STATO_DECODER_TCPIP_MSG stato = STATO_TCPIP_DLE_STX;
         int start = 0;
 
-        QVERIFY(decode(bufferIn, bufferOut, start, stato) == false);
-        QVERIFY(stato == STATO_DATO);
+        QVERIFY(decodeTcpIpMsg(bufferIn, bufferOut, start, stato) == false);
+        QVERIFY(stato == STATO_TCPIP_DATO);
         QVERIFY(bufferOut.length() == 2);
         QVERIFY(start == 5);
     }
@@ -108,11 +108,11 @@ private Q_SLOTS:
         bufferIn.append(DLE);
         bufferIn.append(ETX);
         QByteArray bufferOut;
-        STATO_DECODER stato = STATO_DLE_STX;
+        STATO_DECODER_TCPIP_MSG stato = STATO_TCPIP_DLE_STX;
         int start = 0;
 
-        QVERIFY(decode(bufferIn, bufferOut, start, stato) == true);
-        QVERIFY(stato == STATO_DLE_STX);
+        QVERIFY(decodeTcpIpMsg(bufferIn, bufferOut, start, stato) == true);
+        QVERIFY(stato == STATO_TCPIP_DLE_STX);
         QVERIFY(bufferOut.length() == 1);
         QVERIFY(start == 6);
     }
@@ -133,17 +133,17 @@ private Q_SLOTS:
         bufferIn.append(DLE);
         bufferIn.append(ETX);
         QByteArray bufferOut;
-        STATO_DECODER stato = STATO_DLE_STX;
+        STATO_DECODER_TCPIP_MSG stato = STATO_TCPIP_DLE_STX;
         int start = 0;
 
-        QVERIFY(decode(bufferIn, bufferOut, start, stato) == true);
-        QVERIFY(stato == STATO_DLE_STX);
+        QVERIFY(decodeTcpIpMsg(bufferIn, bufferOut, start, stato) == true);
+        QVERIFY(stato == STATO_TCPIP_DLE_STX);
         QVERIFY(bufferOut.length() == 1);
         QVERIFY(start == 6);
 
         bufferOut.clear();
-        QVERIFY(decode(bufferIn, bufferOut, start, stato) == true);
-        QVERIFY(stato == STATO_DLE_STX);
+        QVERIFY(decodeTcpIpMsg(bufferIn, bufferOut, start, stato) == true);
+        QVERIFY(stato == STATO_TCPIP_DLE_STX);
         QVERIFY(bufferOut.length() == 1);
         QVERIFY(start == 12);
     }

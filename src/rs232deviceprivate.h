@@ -11,32 +11,37 @@ class Rs232DevicePrivate : public QSerialPort
     Q_OBJECT
 public:
     explicit Rs232DevicePrivate(const QSerialPortInfo &info, QObject *parent = 0);
-    ~Rs232DevicePrivate();
 
-    void getVersion (quint8 & major, quint8 & minor);
+    void getVersion (quint8 & versioneMajor, quint8 & versioneMinor);
     void getComStat (quint8 &comstat);
+    void sendMsgCan (const QByteArray &msgCAN);
 
 signals:
-    void fondIt();
+    void fondItSignal();
+    void toClientsSignal(const QByteArray &);
 
 protected slots:
     void errorSlot(QSerialPort::SerialPortError serialPortError);
     void fromDeviceSlot();
-    void sendRequest();
+    void sendMsgGetId();
 
 protected:
-    void handleMsg (const QByteArray & buffer);
+    void handleMsgRxFromDevice (const QByteArray & buffer);
     bool configPort ();
+    void sendMsg(const QByteArray &bufferIn);
 
 private:
-#define TIPO_CAN_MSG 0x00
-#define TIPO_CAN_GET_ID 0x0B
-#define TIPO_CAN_ID 0x0C
+
+#define TIPO_TX_RS232_CAN_MSG 0x00
+#define TIPO_TX_RS232_CAN_GET_ID 0x0B
+
+#define TIPO_RX_RS232_CAN_MSG 0x00
+#define TIPO_RX_RS232_CAN_ID 0x0C
 
     quint8 m_checksum;
     QTimer m_timer;
     QByteArray m_buffer;
-    STATO_DECODER m_statoParser;
+    STATO_DECODER_RS232_MSG m_statoParser;
 
     quint8 m_versioneMajor;
     quint8 m_versioneMinor;

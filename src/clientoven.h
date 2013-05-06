@@ -22,7 +22,7 @@ protected slots:
     void fromClientsSlot();
 
 protected:
-    STATO_DECODER m_statoParser;
+    STATO_DECODER_TCPIP_MSG m_statoParser;
     QByteArray m_buffer;
 };
 

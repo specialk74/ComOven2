@@ -10,7 +10,7 @@
  *          false - se il buffer non contiene un messaggio valido completo
  */
 
-bool decode (const QByteArray &bufferIn, QByteArray &bufferOut, int & idx, STATO_DECODER & stato)
+bool decodeTcpIpMsg (const QByteArray &bufferIn, QByteArray &bufferOut, int & idx, STATO_DECODER_TCPIP_MSG & stato)
 {
     int end = bufferIn.length();
     char dato;
@@ -20,37 +20,37 @@ bool decode (const QByteArray &bufferIn, QByteArray &bufferOut, int & idx, STATO
         switch (stato)
         {
         // Cerco il primo DLE della sequenza DLE-STX
-        case STATO_DLE_STX:
+        case STATO_TCPIP_DLE_STX:
             if (dato == DLE)
-                stato = STATO_STX;
+                stato = STATO_TCPIP_STX;
             break;
         // Cerco l'STX subito dopo il DLE iniziale
-        case STATO_STX:
+        case STATO_TCPIP_STX:
             if (dato == STX)
-                stato = STATO_DATO; // Trovato
+                stato = STATO_TCPIP_DATO; // Trovato
             else
-                stato = STATO_DLE_STX; // Non trovato: ricomincio dall'inizio
+                stato = STATO_TCPIP_DLE_STX; // Non trovato: ricomincio dall'inizio
             break;
         // Sono nella parte dati
-        case STATO_DATO:
+        case STATO_TCPIP_DATO:
             if (dato == DLE)
-                stato = STATO_ETX; // Se trovo un DLE controllo il carattere che viene dopo
+                stato = STATO_TCPIP_ETX; // Se trovo un DLE controllo il carattere che viene dopo
             else
                 bufferOut.append(dato); // Nulla di strano: lo inserisco nel buffer
             break;
         // Arrivo dallo stato precendente
-        case STATO_ETX:
+        case STATO_TCPIP_ETX:
             if (dato == DLE)
             {
                 // Ho trovato un altro DLE: lo inserisco nel buffer e mi riporto allo stato
                 // precedente
                 bufferOut.append(dato);
-                stato = STATO_DATO;
+                stato = STATO_TCPIP_DATO;
             }
             else if (dato == ETX)
             {
                 // Ho trovato ETX: ho finito riportando lo stato a quello iniziale
-                stato = STATO_DLE_STX;
+                stato = STATO_TCPIP_DLE_STX;
                 // Inserisco questo per convalidare che ho gestito questo ultimo carattere
                 idx++;
                 return true;
@@ -60,12 +60,8 @@ bool decode (const QByteArray &bufferIn, QByteArray &bufferOut, int & idx, STATO
                 // Errore: questo carattere non doveva essere qua. Pilusco il buffer
                 // e ricomincio dall'inizio
                 bufferOut.clear();
-                stato = STATO_DLE_STX;
+                stato = STATO_TCPIP_DLE_STX;
             }
-            break;
-
-        case STATO_CHECKSUM:
-            // Qua non esiste
             break;
         }
     }
@@ -75,7 +71,7 @@ bool decode (const QByteArray &bufferIn, QByteArray &bufferOut, int & idx, STATO
 }
 
 
-bool decode2 (const QByteArray &bufferIn, QByteArray &bufferOut, int & idx, STATO_DECODER & stato, quint8 &checksum)
+bool decodeRs232Msg (const QByteArray &bufferIn, QByteArray &bufferOut, int & idx, STATO_DECODER_RS232_MSG & stato, quint8 &checksum)
 {
     int end = bufferIn.length();
     char dato;
@@ -85,24 +81,24 @@ bool decode2 (const QByteArray &bufferIn, QByteArray &bufferOut, int & idx, STAT
         switch (stato)
         {
         // Cerco il primo DLE della sequenza DLE-STX
-        case STATO_DLE_STX:
+        case STATO_RS232_DLE_STX:
             if (dato == DLE)
-                stato = STATO_STX;
+                stato = STATO_RS232_STX;
             break;
         // Cerco l'STX subito dopo il DLE iniziale
-        case STATO_STX:
+        case STATO_RS232_STX:
             if (dato == STX)
             {
-                stato = STATO_DATO; // Trovato
+                stato = STATO_RS232_DATO; // Trovato
                 checksum = 0;
             }
             else
-                stato = STATO_DLE_STX; // Non trovato: ricomincio dall'inizio
+                stato = STATO_RS232_DLE_STX; // Non trovato: ricomincio dall'inizio
             break;
         // Sono nella parte dati
-        case STATO_DATO:
+        case STATO_RS232_DATO:
             if (dato == DLE)
-                stato = STATO_ETX; // Se trovo un DLE controllo il carattere che viene dopo
+                stato = STATO_RS232_ETX; // Se trovo un DLE controllo il carattere che viene dopo
             else
             {
                 bufferOut.append(dato); // Nulla di strano: lo inserisco nel buffer
@@ -110,29 +106,29 @@ bool decode2 (const QByteArray &bufferIn, QByteArray &bufferOut, int & idx, STAT
             }
             break;
         // Arrivo dallo stato precendente
-        case STATO_ETX:
+        case STATO_RS232_ETX:
             if (dato == DLE)
             {
                 // Ho trovato un altro DLE: lo inserisco nel buffer e mi riporto allo stato
                 // precedente
                 bufferOut.append(dato);
-                stato = STATO_DATO;
+                stato = STATO_RS232_DATO;
             }
             else if (dato == ETX)
             {
-                stato = STATO_CHECKSUM;
+                stato = STATO_RS232_CHECKSUM;
             }
             else
             {
                 // Errore: questo carattere non doveva essere qua. Pilusco il buffer
                 // e ricomincio dall'inizio
                 bufferOut.clear();
-                stato = STATO_DLE_STX;
+                stato = STATO_RS232_DLE_STX;
             }
             break;
 
-        case STATO_CHECKSUM:
-            stato = STATO_DLE_STX;
+        case STATO_RS232_CHECKSUM:
+            stato = STATO_RS232_DLE_STX;
             if (dato == ~checksum)
             {
                 checksum = 0;

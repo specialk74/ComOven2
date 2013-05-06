@@ -22,14 +22,10 @@ void AbstractDevice::debug (const QString &testo)
         qDebug() << headDebug << qPrintable(testo);
 }
 
-void AbstractDevice::setVersioneSwMajor (const quint8 &val)
+void AbstractDevice::setVersioneSw (const quint8 &versioneMajor, const quint8 &versioneMinor)
 {
-    m_versioneMajor = val;
-}
-
-void AbstractDevice::setVersioneSwMinor (const quint8 &val)
-{
-    m_versioneMinor = val;
+    m_versioneMajor = versioneMajor;
+    m_versioneMinor = versioneMinor;
 }
 
 union lunghezza {
@@ -41,17 +37,17 @@ union lunghezza {
  * \brief AbstractDevice::toClients
  * \param buffer - Sono solo messaggi CAN
  */
-void AbstractDevice::toClients_CAN (const QByteArray &buffer)
+void AbstractDevice::toClients_CAN (const QByteArray &msgCANfromDevice)
 {
     QByteArray bufferToClients;
-    bufferToClients.append((char) TIPO_CAN_MSG);
+    bufferToClients.append((char) TIPO_TX_TCPIP_CAN_MSG);
     lunghezza lng;
     lng.u32 = 17;
     bufferToClients.append(lng.dato[0]);
     bufferToClients.append(lng.dato[1]);
     bufferToClients.append(lng.dato[2]);
     bufferToClients.append(lng.dato[3]);
-    bufferToClients.append(buffer);
+    bufferToClients.append(msgCANfromDevice);
 
     emit toClientsSignal(bufferToClients);
 }
@@ -71,7 +67,7 @@ void AbstractDevice::fromClientSlot (const QByteArray &buffer)
 
     // Recupero la lunghezza del messaggio dai dati
 
-    // Funziona?
+    // Funziona? bge o lte?
     lunghezza lng;
     lng.dato[0] = buffer[1];
     lng.dato[1] = buffer[2];
@@ -86,18 +82,18 @@ void AbstractDevice::fromClientSlot (const QByteArray &buffer)
 
     switch (buffer[0])
     {
-    case TIPO_CAN_MSG:
+    case TIPO_RX_TCPIP_CAN_MSG:
     {
         QByteArray bufferToDevice = buffer.right(5);
         toDevice (bufferToDevice);
     }
         break;
 
-    case TIPO_GET_ID:
+    case TIPO_RX_TCPIP_GET_ID:
     {
         QByteArray bufferToClients;
         struct IdStruct msgToClients;
-        msgToClients.tipo = getTipoIdFromDevice();
+        msgToClients.tipo = getTipoIdFromDevice(); // 12 (Device Rs232 Converter) o 13 (Device CAN FrindlyARM)
         msgToClients.lunghezza = 9;
         msgToClients.stato_interno = 0;
         msgToClients.versione_major = m_versioneMajor;

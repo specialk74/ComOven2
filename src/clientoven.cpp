@@ -4,7 +4,7 @@ ClientOven::ClientOven(QObject *parent) :
     QTcpSocket(parent)
 {
     // Quando mi arrivano dei dati dal client
-    m_statoParser = STATO_DLE_STX;
+    m_statoParser = STATO_TCPIP_DLE_STX;
     connect (this, SIGNAL(readyRead()), this, SLOT(fromClientsSlot()));
 }
 
@@ -21,7 +21,7 @@ void ClientOven::fromClientsSlot()
     // Fin tanto che non sono arrivato al fondo del buffer che il client mi ha spedisco, decodifico!
     while (start < end)
     {
-        if (decode (buffer, m_buffer, start, m_statoParser))
+        if (decodeTcpIpMsg (buffer, m_buffer, start, m_statoParser))
         {
             // E' stato trovato un messaggio valido completo: mando un segnale per gestirlo
             emit toDeviceSignal(m_buffer);

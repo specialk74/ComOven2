@@ -7,16 +7,24 @@
 #define STX 0x02
 #define ETX 0x03
 
-enum STATO_DECODER {
-    STATO_DLE_STX,
-    STATO_STX,
-    STATO_DATO,
-    STATO_ETX,
-    STATO_CHECKSUM
+enum STATO_DECODER_TCPIP_MSG {
+    STATO_TCPIP_DLE_STX,
+    STATO_TCPIP_STX,
+    STATO_TCPIP_DATO,
+    STATO_TCPIP_ETX,
+    STATO_RS232_CHECKSUM
 };
 
-bool decode (const QByteArray &bufferIn, QByteArray &bufferOut, int & idx, STATO_DECODER & stato);
-bool decode2 (const QByteArray &bufferIn, QByteArray &bufferOut, int & idx, STATO_DECODER & stato, quint8 &checksum);
+enum STATO_DECODER_RS232_MSG {
+    STATO_RS232_DLE_STX,
+    STATO_RS232_STX,
+    STATO_RS232_DATO,
+    STATO_RS232_ETX,
+    STATO_RS232_CHECKSUM
+};
+
+bool decodeTcpIpMsg (const QByteArray &bufferIn, QByteArray &bufferOut, int & idx, STATO_DECODER_TCPIP_MSG & stato);
+bool decodeRs232Msg (const QByteArray &bufferIn, QByteArray &bufferOut, int & idx, STATO_DECODER_RS232_MSG & stato, quint8 &checksum);
 void encode(const QByteArray &bufferIn, QByteArray &bufferOut);
 quint8 cchecksum (const QByteArray & bufferIn);
 

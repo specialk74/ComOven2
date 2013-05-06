@@ -14,17 +14,20 @@ public:
     ~Rs232Device ();
 
 protected:
+#define TIPO_RX_TCPIP_ID  0x0C
+
     static Rs232Device * m_Instance;
     explicit Rs232Device(QObject *parent);
 
     virtual void toDevice (const QByteArray &buffer);
-    virtual quint8 getTipoIdFromDevice();
+    virtual quint8 getTipoIdFromDevice() { return TIPO_RX_TCPIP_ID; }
     virtual quint8 getComStatFromDevice();
-    virtual void getVersionFromDevice (quint8 & major, quint8 & minor);
+    virtual void getVersionFromDevice (quint8 & versioneMajor, quint8 & versioneMinor);
 
 protected slots:
-    void startSearch ();
+    void searchSlot ();
     void foundItSlot();
+    void fromDeviceSlot(const QByteArray &buffer);
 
 private:
     Rs232DevicePrivate * m_devicePrivate;

@@ -22,8 +22,7 @@ public:
 
     void setDebug (const bool &val);
     inline bool getDebug () { return m_debug; }
-    void setVersioneSwMajor (const quint8 &val);
-    void setVersioneSwMinor (const quint8 &val);
+    void setVersioneSw (const quint8 &versioneMajor, const quint8 &versioneMinor);
 
 signals:
     void toClientsSignal (const QByteArray &buffer);
@@ -32,15 +31,19 @@ public slots:
     void fromClientSlot (const QByteArray &buffer);
 
 protected:
-#define TIPO_CAN_MSG 0x00
-#define TIPO_GET_ID  0x0B
+
+#define TIPO_RX_TCPIP_CAN_MSG 0x00
+#define TIPO_RX_TCPIP_GET_ID  0x0B
+
+#define TIPO_TX_TCPIP_CAN_MSG 0x00
+
     virtual void toDevice (const QByteArray &buffer) = 0;
     virtual quint8 getTipoIdFromDevice() = 0;
     virtual quint8 getComStatFromDevice() = 0;
-    virtual void getVersionFromDevice (quint8 & major, quint8 & minor) = 0;
+    virtual void getVersionFromDevice (quint8 & versioneMajor, quint8 & versioneMinor) = 0;
     virtual void debug (const QString &testo);
 
-    void toClients_CAN (const QByteArray &buffer);
+    void toClients_CAN (const QByteArray &msgCANfromDevice);
 
 private:
     bool m_debug;

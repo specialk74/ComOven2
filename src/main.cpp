@@ -8,12 +8,19 @@
 
 const char projectName[] = "ComOven2";
 const int portServer = 6800;
-const char version[] = "Versione: 1.6";
+
+static const int versioneMajor = 1;
+static const int versioneMinor = 0;
+
+QString getVersion ()
+{
+    return QString ("Version: %1.%2").arg(versioneMajor).arg(versioneMinor);
+}
 
 void usage (void)
 {
     qDebug() << "Usage: " << projectName << "[OPTION...]";
-    qDebug() << "  " << version;
+    qDebug() << "  " << getVersion();
     qDebug() << "      -d, --debug         emette messaggi di debug";
     qDebug() << "      -p, --port=PORT     porta in ascolto del server (default" << portServer << ")";
     qDebug() << "      -V, --version       visualizza la versione";
@@ -49,7 +56,7 @@ int main(int argc, char *argv[])
             debug = true;
         }
         else if ((rxArgVersion.indexIn(args.at(i)) != -1) || (rxArgVersionLong.indexIn(args.at(i)) != -1)) {
-            qDebug() << version;
+            qDebug() << getVersion();
             return 0;
         }
         else if ((rxArgHelp.indexIn(args.at(i)) != -1) || (rxArgHelpLong.indexIn(args.at(i)) != -1)) {
@@ -70,6 +77,7 @@ int main(int argc, char *argv[])
     TcpGateway::Instance()->startListen();
 
     Rs232Device::Instance();
+    Rs232Device::Instance()->setVersioneSw(versioneMajor, versioneMinor);
 
     return app.exec();
 }

@@ -2,29 +2,37 @@
 
 #include "rs232deviceprivate.h"
 
+/*!
+ * \brief Rs232DevicePrivate::Rs232DevicePrivate - CTor
+ * \param info
+ * \param parent
+ */
 Rs232DevicePrivate::Rs232DevicePrivate(const QSerialPortInfo &info, QObject *parent) :
     QSerialPort(info, parent)
 {
+    // Faccio partire un timer: se entro il suo timeout non ho trovato il converter mi autodistruggo
     connect (&m_timer, SIGNAL(timeout()), this, SLOT(deleteLater()));
     m_timer.start(2000);
 
+    // Sono riuscito a configurare la porta?
     if (configPort())
     {
-        m_statoParser = STATO_DLE_STX;
+        // Si, la porta e' fisica e non virtuale.
+        m_statoParser = STATO_RS232_DLE_STX;
         m_checksum = 0;
 
         connect(this, SIGNAL(error(QSerialPort::SerialPortError)), this, SLOT(errorSlot(QSerialPort::SerialPortError)));
         connect (this, SIGNAL(readyRead()), this, SLOT(fromDeviceSlot()));
 
-        sendRequest();
+        // Spedisco il messaggio per sapere se e' collegato un converter
+        sendMsgGetId();
     }
 }
 
-Rs232DevicePrivate::~Rs232DevicePrivate()
-{
-    qDebug() << "DTor Rs232DevicePrivate for" << portName();
-}
-
+/*!
+ * \brief Rs232DevicePrivate::configPort - Parametri per configurare la porta seriale
+ * \return true se riesce a configurare correttamente la porta seriale
+ */
 bool Rs232DevicePrivate::configPort ()
 {
     if (!open(QIODevice::ReadWrite)) {
@@ -66,12 +74,36 @@ bool Rs232DevicePrivate::configPort ()
     return true;
 }
 
-void Rs232DevicePrivate::sendRequest()
+/*!
+ * \brief Rs232DevicePrivate::sendRequest - Costruisco il messaggio GET_ID da spedire al converter
+ */
+void Rs232DevicePrivate::sendMsgGetId()
 {
-    QByteArray bufferIn (13, 0);
-    bufferIn[0] = TIPO_CAN_GET_ID;
-    QByteArray bufferOut;
+    QByteArray bufferIn;
+    bufferIn.append((char) TIPO_TX_RS232_CAN_GET_ID);
+    sendMsg(bufferIn);
+}
 
+/*!
+ * \brief Rs232DevicePrivate::sendMsgCan - Costruisco il messaggio CAN_MSG da spedire al converter
+ * \param msgCAN
+ */
+void Rs232DevicePrivate::sendMsgCan(const QByteArray &msgCAN)
+{
+    QByteArray bufferIn;
+    bufferIn.append((char) TIPO_TX_RS232_CAN_MSG);
+    bufferIn.append(msgCAN);
+    sendMsg (bufferIn);
+}
+
+/*!
+ * \brief Rs232DevicePrivate::sendMsg - Richiamata solo privatamente per spedire "fisicamente"
+ *                                      i messaggi verso il device
+ * \param bufferIn
+ */
+void Rs232DevicePrivate::sendMsg(const QByteArray &bufferIn)
+{
+    QByteArray bufferOut;
     quint8 checksum = cchecksum(bufferIn);
     encode(bufferIn, bufferOut);
     bufferOut.append(~checksum);
@@ -79,6 +111,73 @@ void Rs232DevicePrivate::sendRequest()
     write(bufferOut);
 }
 
+/*!
+ * \brief Rs232DevicePrivate::handleMsgRxFromDevice - Decodifica il tipo di messaggio
+ *                                                  - e lo gestisce
+ * \param buffer
+ */
+void Rs232DevicePrivate::handleMsgRxFromDevice (const QByteArray & buffer)
+{
+    quint8 lunghezza = buffer.length();
+    if (lunghezza < 1)
+    {
+        qDebug() << "Messaggio from Device corto";
+        return;
+    }
+
+    switch (buffer[0])
+    {
+    case TIPO_RX_RS232_CAN_ID:
+        if (lunghezza < 7)
+        {
+            qDebug() << "Messaggio CAN_ID corto";
+            return;
+        }
+
+        // Interrompo il timer per l'auto-delete
+        m_timer.stop();
+
+        // Mi tengo da parte i valori se mai un Client dovesse chiedermeli
+        m_statoInterno = buffer.at(1);
+        m_versioneMajor = buffer.at(2);
+        m_versioneMinor = buffer.at(3);
+        m_comstat      = buffer.at(6);
+
+        // Faccio sapere a Rs232Device che ho trovato un converter e che quindi puo' interrompere
+        // la ricerca
+        emit fondItSignal();
+
+        // Ripeto il GET_ID ogni 6 sec: ma serve? Si, perche'cosi' rinfresco m_comstat e m_statoInterno
+        QTimer::singleShot(6000, this, SLOT(sendRequest()));
+        break;
+
+    case TIPO_RX_RS232_CAN_MSG:
+    {
+        if (lunghezza != 13)
+        {
+            qDebug() << "Messaggio CAN_MSG non std";
+            return;
+        }
+
+        // Tolgo solo il primo carattere
+        QByteArray bufferOut = buffer.right(buffer.length() - 1);
+        // Messaggio da spedire verso i Clients
+        emit toClientsSignal(bufferOut);
+    }
+        break;
+    }
+}
+
+/*************************************************************
+ *
+ *                        SLOTS
+ *
+ *
+ *************************************************************/
+/*!
+ * \brief Rs232DevicePrivate::errorSlot - Gestisce se viene scollegato il converter
+ * \param serialPortError
+ */
 void Rs232DevicePrivate::errorSlot(QSerialPort::SerialPortError serialPortError)
 {
     switch (serialPortError)
@@ -98,64 +197,51 @@ void Rs232DevicePrivate::errorSlot(QSerialPort::SerialPortError serialPortError)
     }
 }
 
+/*!
+ * \brief Rs232DevicePrivate::fromDeviceSlot - Legge i byte dalla porta seriale, li decodifica
+ *                                             e li passa a "handleMsgRxFromDevice" per gestirli
+ */
 void Rs232DevicePrivate::fromDeviceSlot()
 {
     QByteArray buffer = readAll();
     int start = 0;
-    int end = buffer.length();
+
     // Fin tanto che non sono arrivato al fondo del buffer che il client mi ha spedisco, decodifico!
-    while (start < end)
+    while (start < buffer.length())
     {
-        if (decode2 (buffer, m_buffer, start, m_statoParser, m_checksum))
+        if (decodeRs232Msg (buffer, m_buffer, start, m_statoParser, m_checksum))
         {
-            handleMsg(m_buffer);
-            // Ripulisco il buffer perche' non serve piu'
+            handleMsgRxFromDevice(m_buffer);
+            // Ripulisco il buffer perche' gia' gestito
             m_buffer.clear();
         }
     }
 }
 
-quint32 counter = 0;
-
-void Rs232DevicePrivate::handleMsg (const QByteArray & buffer)
+/*************************************************************
+ *
+ *                        GET/SET
+ *
+ *
+ *************************************************************/
+/*!
+ * \brief Rs232DevicePrivate::getVersion
+ * \param major
+ * \param minor
+ */
+void Rs232DevicePrivate::getVersion (quint8 & versioneMajor, quint8 & versioneMinor)
 {
-    quint8 lunghezza = buffer.length();
-    if (lunghezza < 1)
-    {
-        qDebug() << "Messaggio from Device corto";
-        return;
-    }
-
-    switch (buffer[0])
-    {
-    case TIPO_CAN_ID:
-        if (lunghezza < 7)
-        {
-            qDebug() << "Messaggio CAN_ID corto";
-            return;
-        }
-        qDebug() << "Rx GET_ID" << counter++;
-        m_timer.stop();
-        m_statoInterno = buffer.at(1);
-        m_versioneMajor = buffer.at(2);
-        m_versioneMinor = buffer.at(3);
-        m_comstat      = buffer.at(6);
-
-        emit fondIt();
-
-        QTimer::singleShot(100, this, SLOT(sendRequest()));
-        break;
-    }
+    versioneMajor = m_versioneMajor;
+    versioneMinor = m_versioneMinor;
 }
 
-void Rs232DevicePrivate::getVersion (quint8 & major, quint8 & minor)
-{
-    major = m_versioneMajor;
-    minor = m_versioneMinor;
-}
-
+/*!
+ * \brief Rs232DevicePrivate::getComStat
+ * \param comstat
+ */
 void Rs232DevicePrivate::getComStat (quint8 &comstat)
 {
     comstat = m_comstat;
 }
+
 
