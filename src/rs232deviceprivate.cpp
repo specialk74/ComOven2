@@ -2,6 +2,8 @@
 
 #include "rs232deviceprivate.h"
 
+static const char headDebug[] = "[Rs232DevicePrivate]";
+
 /*!
  * \brief Rs232DevicePrivate::Rs232DevicePrivate - CTor
  * \param info
@@ -10,9 +12,13 @@
 Rs232DevicePrivate::Rs232DevicePrivate(const QSerialPortInfo &info, QObject *parent) :
     QSerialPort(info, parent)
 {
+    m_debug = false;
+
     // Faccio partire un timer: se entro il suo timeout non ho trovato il converter mi autodistruggo
-    connect (&m_timer, SIGNAL(timeout()), this, SLOT(deleteLater()));
-    m_timer.start(2000);
+    connect (&m_timerAutodelete, SIGNAL(timeout()), this, SLOT(deleteLater()));
+    m_timerAutodelete.start(2000);
+
+    connect (&m_timerSendGetId, SIGNAL(timeout()), this, SLOT(sendMsgGetId()));
 
     // Sono riuscito a configurare la porta?
     if (configPort())
@@ -36,38 +42,44 @@ Rs232DevicePrivate::Rs232DevicePrivate(const QSerialPortInfo &info, QObject *par
 bool Rs232DevicePrivate::configPort ()
 {
     if (!open(QIODevice::ReadWrite)) {
-        qDebug() << QString("Can't open %1, error code %2")
+        QString testo = QString("Can't open %1, error code %2")
                     .arg(portName()).arg(error());
+        debug(testo);
         return false;
     }
 
     if (!setBaudRate(QSerialPort::Baud115200)) {
-        qDebug() << QString("Can't set rate 115200 baud to port %1, error code %2")
+        QString testo = QString("Can't set rate 115200 baud to port %1, error code %2")
                      .arg(portName()).arg(error());
+        debug(testo);
         return false;
     }
 
     if (!setDataBits(QSerialPort::Data8)) {
-        qDebug() << QString("Can't set 8 data bits to port %1, error code %2")
+        QString testo = QString("Can't set 8 data bits to port %1, error code %2")
                      .arg(portName()).arg(error());
+        debug(testo);
         return false;
     }
 
     if (!setParity(QSerialPort::NoParity)) {
-        qDebug() << QString("Can't set no patity to port %1, error code %2")
+        QString testo = QString("Can't set no patity to port %1, error code %2")
                      .arg(portName()).arg(error());
+        debug(testo);
         return false;
     }
 
     if (!setStopBits(QSerialPort::OneStop)) {
-        qDebug() << QString("Can't set 1 stop bit to port %1, error code %2")
+        QString testo = QString("Can't set 1 stop bit to port %1, error code %2")
                      .arg(portName()).arg(error());
+        debug(testo);
         return false;
     }
 
     if (!setFlowControl(QSerialPort::NoFlowControl)) {
-        qDebug() << QString("Can't set no flow control to port %1, error code %2")
+        QString testo = QString("Can't set no flow control to port %1, error code %2")
                      .arg(portName()).arg(error());
+        debug(testo);
         return false;
     }
 
@@ -75,7 +87,7 @@ bool Rs232DevicePrivate::configPort ()
 }
 
 /*!
- * \brief Rs232DevicePrivate::sendRequest - Costruisco il messaggio GET_ID da spedire al converter
+ * \brief Rs232DevicePrivate::sendMsgGetId - Costruisco il messaggio GET_ID da spedire al converter
  */
 void Rs232DevicePrivate::sendMsgGetId()
 {
@@ -121,7 +133,7 @@ void Rs232DevicePrivate::handleMsgRxFromDevice (const QByteArray & buffer)
     quint8 lunghezza = buffer.length();
     if (lunghezza < 1)
     {
-        qDebug() << "Messaggio from Device corto";
+        debug("Messaggio from Device corto");
         return;
     }
 
@@ -130,12 +142,20 @@ void Rs232DevicePrivate::handleMsgRxFromDevice (const QByteArray & buffer)
     case TIPO_RX_RS232_CAN_ID:
         if (lunghezza < 7)
         {
-            qDebug() << "Messaggio CAN_ID corto";
+            debug("Messaggio CAN_ID corto");
             return;
         }
 
+        if (m_timerAutodelete.isActive())
+        {
+            // La prima volta in assoluto scrivo un messaggio di debug per sapere a quale seriale
+            // il converter e' stato trovato
+            QString testo = QString ("Converter found on %1").arg(portName());
+            debug(testo);
+        }
+
         // Interrompo il timer per l'auto-delete
-        m_timer.stop();
+        m_timerAutodelete.stop();
 
         // Mi tengo da parte i valori se mai un Client dovesse chiedermeli
         m_statoInterno = buffer.at(1);
@@ -148,14 +168,14 @@ void Rs232DevicePrivate::handleMsgRxFromDevice (const QByteArray & buffer)
         emit fondItSignal();
 
         // Ripeto il GET_ID ogni 6 sec: ma serve? Si, perche'cosi' rinfresco m_comstat e m_statoInterno
-        QTimer::singleShot(6000, this, SLOT(sendRequest()));
+        m_timerSendGetId.start(6000);
         break;
 
     case TIPO_RX_RS232_CAN_MSG:
     {
         if (lunghezza != 13)
         {
-            qDebug() << "Messaggio CAN_MSG non std";
+            debug("Lunghezza messaggio CAN_MSG non std");
             return;
         }
 
@@ -166,6 +186,12 @@ void Rs232DevicePrivate::handleMsgRxFromDevice (const QByteArray & buffer)
     }
         break;
     }
+}
+
+void Rs232DevicePrivate::debug (const QString &testo)
+{
+    if (m_debug)
+        qDebug() << headDebug << qPrintable(testo);
 }
 
 /*************************************************************
@@ -187,12 +213,15 @@ void Rs232DevicePrivate::errorSlot(QSerialPort::SerialPortError serialPortError)
         break;
 
     case QSerialPort::ResourceError:
-        qDebug() << "Converter scollegato?";
+        debug("Converter scollegato?");
         deleteLater();
         break;
 
     default:
-        qDebug() << "SerialPortError" << serialPortError;
+    {
+        QString testo = QString ("SerialPortError %1").arg(serialPortError);
+        debug(testo);
+    }
         break;
     }
 }

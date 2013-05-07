@@ -15,6 +15,7 @@ public:
     void getVersion (quint8 & versioneMajor, quint8 & versioneMinor);
     void getComStat (quint8 &comstat);
     void sendMsgCan (const QByteArray &msgCAN);
+    void setDebug (const bool &val) { m_debug = val; }
 
 signals:
     void fondItSignal();
@@ -29,6 +30,7 @@ protected:
     void handleMsgRxFromDevice (const QByteArray & buffer);
     bool configPort ();
     void sendMsg(const QByteArray &bufferIn);
+    void debug (const QString &testo);
 
 private:
 
@@ -39,7 +41,8 @@ private:
 #define TIPO_RX_RS232_CAN_ID 0x0C
 
     quint8 m_checksum;
-    QTimer m_timer;
+    QTimer m_timerAutodelete;
+    QTimer m_timerSendGetId;
     QByteArray m_buffer;
     STATO_DECODER_RS232_MSG m_statoParser;
 
@@ -47,6 +50,7 @@ private:
     quint8 m_versioneMinor;
     quint8 m_comstat;
     quint8 m_statoInterno;
+    bool m_debug;
 };
 
 #endif // RS232DEVICEPRIVATE_H

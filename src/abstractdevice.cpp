@@ -37,7 +37,7 @@ union lunghezza {
  * \brief AbstractDevice::toClients
  * \param buffer - Sono solo messaggi CAN
  */
-void AbstractDevice::toClients_CAN (const QByteArray &msgCANfromDevice)
+void AbstractDevice::fromDeviceToClients (const QByteArray &msgCANfromDevice)
 {
     QByteArray bufferToClients;
     bufferToClients.append((char) TIPO_TX_TCPIP_CAN_MSG);

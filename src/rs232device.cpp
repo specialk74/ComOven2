@@ -27,6 +27,7 @@ Rs232Device * Rs232Device::Instance(QObject *parent)
  */
 Rs232Device::Rs232Device(QObject *parent) : AbstractDevice (parent)
 {
+    m_Instance = this;
     m_devicePrivate = NULL;
     connect (&m_timer, SIGNAL(timeout()), this, SLOT(searchSlot()));
     searchSlot();
@@ -98,6 +99,9 @@ void Rs232Device::getVersionFromDevice (quint8 & versioneMajor, quint8 & version
  */
 void Rs232Device::searchSlot ()
 {
+    if (m_devicePrivate)
+        m_devicePrivate = NULL;
+
     foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts())
     {
         QSerialPort serial;
@@ -108,6 +112,7 @@ void Rs232Device::searchSlot ()
             // Il device esiste
             serial.close();
             Rs232DevicePrivate * devicePrivate = new Rs232DevicePrivate(info, this);
+            devicePrivate->setDebug(getDebug());
             // Se l'oggetto Rs232DevicePrivate trovera' il converter, emettera' "fondItSignal()"
             connect (devicePrivate, SIGNAL(fondItSignal()), this, SLOT(foundItSlot()));
         }
@@ -135,10 +140,10 @@ void Rs232Device::foundItSlot()
     connect (m_devicePrivate, SIGNAL(toClientsSignal(QByteArray)), this, SLOT(fromDeviceSlot(QByteArray)));
 
     // Non mi serve piu' saperlo
-    disconnect (m_devicePrivate, SIGNAL(fondItSignal()), this, SLOT(foundItSlot()));
+    disconnect (m_devicePrivate, SIGNAL(fondItSignal()), this, SLOT(foundItSlot()));    
 }
 
 void Rs232Device::fromDeviceSlot(const QByteArray &buffer)
 {
-    toClients_CAN(buffer);
+    fromDeviceToClients(buffer);
 }

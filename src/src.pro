@@ -8,7 +8,7 @@ QT       += core network serialport
 
 QT       -= gui
 
-TARGET = src
+TARGET = ComOven2
 CONFIG   += console debug serialport
 CONFIG   -= app_bundle
 

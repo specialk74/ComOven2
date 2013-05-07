@@ -43,7 +43,7 @@ protected:
     virtual void getVersionFromDevice (quint8 & versioneMajor, quint8 & versioneMinor) = 0;
     virtual void debug (const QString &testo);
 
-    void toClients_CAN (const QByteArray &msgCANfromDevice);
+    void fromDeviceToClients (const QByteArray &msgCANfromDevice);
 
 private:
     bool m_debug;

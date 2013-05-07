@@ -78,6 +78,10 @@ int main(int argc, char *argv[])
 
     Rs232Device::Instance();
     Rs232Device::Instance()->setVersioneSw(versioneMajor, versioneMinor);
+    Rs232Device::Instance()->setDebug(debug);
+
+    QObject::connect (TcpGateway::Instance(), SIGNAL(toDeviceSignal(QByteArray)), Rs232Device::Instance(), SLOT(fromClientSlot(QByteArray)));
+    QObject::connect (Rs232Device::Instance(), SIGNAL(toClientsSignal(QByteArray)), TcpGateway::Instance(), SLOT(fromDeviceSlot(QByteArray)));
 
     return app.exec();
 }
