@@ -21,7 +21,8 @@ SOURCES += main.cpp \
     utils.cpp \
     abstractdevice.cpp \
     rs232device.cpp \
-    rs232deviceprivate.cpp
+    rs232deviceprivate.cpp \
+    candevice.cpp
 
 HEADERS += \
     tcpgateway.h \
@@ -29,4 +30,5 @@ HEADERS += \
     utils.h \
     abstractdevice.h \
     rs232device.h \
-    rs232deviceprivate.h
+    rs232deviceprivate.h \
+    candevice.h
