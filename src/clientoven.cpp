@@ -14,7 +14,6 @@ ClientOven::ClientOven(QObject *parent) :
  */
 void ClientOven::fromClientsSlot()
 {
-    qDebug("fromClientsSlot");
     QByteArray buffer = readAll();
     int start = 0;
     int end = buffer.length();
@@ -37,7 +36,5 @@ void ClientOven::fromClientsSlot()
  */
 void ClientOven::toClientSlot (const QByteArray &buffer)
 {
-    qDebug("toClient");
-
     write(buffer);
 }

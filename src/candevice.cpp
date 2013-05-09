@@ -12,6 +12,7 @@
  */
 
 #include "candevice.h"
+#include "utils.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -55,28 +56,43 @@ CanDevice::~CanDevice ()
         close(m_socketCan);
 }
 
-// TODO
-void CanDevice::toDevice (const QByteArray &)
+/*!
+ * \brief CanDevice::toDevice
+ * \param buffer
+ */
+void CanDevice::toDevice (const QByteArray &buffer)
 {
-    //m_frame.can_id =
+    m_frame.can_id = _ntohl(fromBufferToNumber(buffer));
     m_frame.can_id |=  CAN_EFF_FLAG;
     m_frame.can_dlc = 8;
-    //memcpy (m_frame.data, cmessSend.get_dati(), 8);
+    memcpy (m_frame.data, buffer.data() + 4, buffer.length() - 4);
 
     write (m_socketCan, &m_frame, sizeof(m_frame));
 }
 
+/*!
+ * \brief CanDevice::getComStatFromDevice
+ * \return
+ */
 quint8 CanDevice::getComStatFromDevice()
 {
     return 0;
 }
 
+/*!
+ * \brief CanDevice::getVersionFromDevice
+ * \param versioneMajor
+ * \param versioneMinor
+ */
 void CanDevice::getVersionFromDevice (quint8 & versioneMajor, quint8 & versioneMinor)
 {
     versioneMajor = 0;
     versioneMinor = 0;
 }
 
+/*!
+  Sequenza di comandi da mandare al sistema per configurare il device CAN
+  */
 static const char *sequenzaComandi[] =
 {
     "ifconfig vcan%1 down",
@@ -86,12 +102,16 @@ static const char *sequenzaComandi[] =
     "ifconfig vcan%1 up"
 };
 
+/*!
+ * \brief CanDevice::setPort
+ * \param port
+ */
 void CanDevice::setPort(const int &port)
 {
     struct sockaddr_can addr;
     struct ifreq ifr;
 
-    for (int idx = 0; idx < (sizeof(sequenzaComandi)/sizeof(sequenzaComandi[0])); idx++)
+    for (unsigned int idx = 0; idx < (sizeof(sequenzaComandi)/sizeof(sequenzaComandi[0])); idx++)
     {
         QString comando = QString (sequenzaComandi[idx]).arg(port);
         system(comando.toLocal8Bit());
@@ -127,14 +147,19 @@ void CanDevice::setPort(const int &port)
     QSocketNotifier *notifier = new QSocketNotifier (m_socketCan, QSocketNotifier::Read, this);
     if (notifier)
         connect (notifier, SIGNAL(activated(int)), this, SLOT(fromDeviceSlot(int)));
-
 }
 
-// TODO
+/*!
+ * \brief CanDevice::fromDeviceSlot
+ * \param socket
+ */
 void CanDevice::fromDeviceSlot(int socket)
 {
     if (read (socket, &m_frame, sizeof(m_frame)) > 0)
     {
-        //emit toClientsSignal(buffer);
+        QByteArray buffer;
+        buffer.append(fromNumberToBuffer(_htonl(m_frame.can_id)));
+        buffer.append(QByteArray::fromRawData((const char *)m_frame.data, m_frame.can_dlc));
+        emit toClientsSignal(buffer);
     }
 }

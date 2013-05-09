@@ -27,4 +27,12 @@ bool decodeRs232Msg (const QByteArray &bufferIn, QByteArray &bufferOut, int & id
 void encode(const QByteArray &bufferIn, QByteArray &bufferOut);
 quint8 cchecksum (const QByteArray & bufferIn);
 
+
+quint32 fromBufferToNumber (const QByteArray &buffer);
+QByteArray fromNumberToBuffer (quint32 number);
+quint16 _htons(quint16 x);
+quint16 _ntohs(quint16 x);
+quint32 _htonl(quint32 x);
+quint32 _ntohl(quint32 x);
+
 #endif // UTILS_H
