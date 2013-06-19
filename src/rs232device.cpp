@@ -2,9 +2,9 @@
 #include "rs232deviceprivate.h"
 
 #include <QDebug>
-#include <QtSerialPort/QSerialPort>
-#include <QtSerialPort/QSerialPortInfo>
 #include <QTimer>
+
+#define TIMER_RICERCA 1000
 
 Rs232Device * Rs232Device::m_Instance = NULL;
 
@@ -106,6 +106,7 @@ void Rs232Device::searchSlot ()
     {
         QSerialPort serial;
         serial.setPort(info);
+
         // Provo ad aprire il device per controllare che esista fisicamente
         if (serial.open(QIODevice::ReadWrite))
         {
@@ -119,7 +120,7 @@ void Rs232Device::searchSlot ()
     }
 
     // Faccio partire un timer per far ripartire la ricerca fino a quando un converter mi rispondera'
-    m_timer.start(6000);
+    m_timer.start(TIMER_RICERCA);
 }
 
 /*!

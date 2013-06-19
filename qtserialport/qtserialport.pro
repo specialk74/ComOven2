@@ -1,6 +1,6 @@
 lessThan(QT_MAJOR_VERSION, 5) {
     TEMPLATE = subdirs
-    SUBDIRS = src examples tests
+    SUBDIRS = src tests
     CONFIG += ordered
 
     !infile($$OUT_PWD/.qmake.cache, QTSERIALPORT_PROJECT_ROOT) {

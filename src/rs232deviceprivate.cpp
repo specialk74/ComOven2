@@ -35,6 +35,10 @@ Rs232DevicePrivate::Rs232DevicePrivate(const QSerialPortInfo &info, QObject *par
     }
 }
 
+Rs232DevicePrivate::~Rs232DevicePrivate()
+{
+}
+
 /*!
  * \brief Rs232DevicePrivate::configPort - Parametri per configurare la porta seriale
  * \return true se riesce a configurare correttamente la porta seriale
@@ -206,13 +210,17 @@ void Rs232DevicePrivate::debug (const QString &testo)
  */
 void Rs232DevicePrivate::errorSlot(QSerialPort::SerialPortError serialPortError)
 {
-    switch (serialPortError)
+    if (m_debug)
+
+     switch (serialPortError)
     {
     case QSerialPort::NoError:
         // Non faccio nulla
         break;
 
     case QSerialPort::ResourceError:
+    case QSerialPort::WriteError:
+    case QSerialPort::ReadError:
         debug("Converter scollegato?");
         deleteLater();
         break;
