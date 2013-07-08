@@ -218,6 +218,7 @@ void Rs232DevicePrivate::errorSlot(QSerialPort::SerialPortError serialPortError)
 {
     if (m_debug)
         qDebug() << "Error" << serialPortError;
+
     switch (serialPortError)
     {
     case QSerialPort::NoError:

@@ -19,6 +19,13 @@
 #include <sys/ioctl.h>
 #include <net/if.h>
 #include <QSocketNotifier>
+#include <QDebug>
+
+// Purtroppo nel compilatore del FriendlyARM non c'e' questa define
+#ifndef PF_CAN
+#define PF_CAN 29
+#define AF_CAN PF_CAN
+#endif
 
 // Purtroppo nel compilatore del FriendlyARM non c'e' questa define
 #ifndef PF_CAN
@@ -47,8 +54,10 @@ CanDevice * CanDevice::Instance(QObject *parent, const int &port)
  */
 CanDevice::CanDevice(QObject *parent, const int &port) : AbstractDevice (parent)
 {
+    qDebug() << "CTor CanDevice";
     m_Instance = this;
     m_socketCan = 0;
+    m_exist = false;
     setPort(port);
 }
 
@@ -57,6 +66,8 @@ CanDevice::CanDevice(QObject *parent, const int &port) : AbstractDevice (parent)
  */
 CanDevice::~CanDevice ()
 {
+    qDebug() << "DTor CanDevice";
+
     m_Instance = NULL;
     if (m_socketCan)
         close(m_socketCan);
@@ -117,9 +128,12 @@ void CanDevice::setPort(const int &port)
     struct sockaddr_can addr;
     struct ifreq ifr;
 
+    qDebug()<< "CanDevice::setPort";
+
     for (unsigned int idx = 0; idx < (sizeof(sequenzaComandi)/sizeof(sequenzaComandi[0])); idx++)
     {
         QString comando = QString (sequenzaComandi[idx]).arg(port);
+        qDebug() << comando;
         system(comando.toLocal8Bit());
     }
 
@@ -132,9 +146,12 @@ void CanDevice::setPort(const int &port)
     sprintf (ifr.ifr_name, "can%d", port);
     if (ioctl(m_socketCan, SIOCGIFINDEX, &ifr) < 0)
     {
-        perror("SIOCGIFINDEX");
-        exit(1);
+        // Il device non esiste
+        return;
     }
+
+    // Il device esiste
+    m_exist = true;
 
     addr.can_ifindex = ifr.ifr_ifindex;
 

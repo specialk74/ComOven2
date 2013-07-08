@@ -106,6 +106,7 @@ void Rs232Device::searchSlot ()
     {
         QSerialPort serial;
         serial.setPort(info);
+
         // Provo ad aprire il device per controllare che esista fisicamente
         if (serial.open(QIODevice::ReadWrite))
         {
