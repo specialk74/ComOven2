@@ -14,6 +14,8 @@ Rs232DevicePrivate::Rs232DevicePrivate(const QSerialPortInfo &info, QObject *par
 {
     m_debug = false;
 
+    qDebug() << "CTor" << info.portName();
+
     // Faccio partire un timer: se entro il suo timeout non ho trovato il converter mi autodistruggo
     connect (&m_timerAutodelete, SIGNAL(timeout()), this, SLOT(deleteLater()));
     m_timerAutodelete.start(2000);
@@ -33,6 +35,11 @@ Rs232DevicePrivate::Rs232DevicePrivate(const QSerialPortInfo &info, QObject *par
         // Spedisco il messaggio per sapere se e' collegato un converter
         sendMsgGetId();
     }
+}
+
+Rs232DevicePrivate::~Rs232DevicePrivate()
+{
+    qDebug() << "DTor" << portName();
 }
 
 /*!
@@ -121,6 +128,8 @@ void Rs232DevicePrivate::sendMsg(const QByteArray &bufferIn)
     bufferOut.append(~checksum);
 
     write(bufferOut);
+
+    qDebug() << "write" << portName();
 }
 
 /*!
@@ -130,6 +139,7 @@ void Rs232DevicePrivate::sendMsg(const QByteArray &bufferIn)
  */
 void Rs232DevicePrivate::handleMsgRxFromDevice (const QByteArray & buffer)
 {
+    qDebug() << "handleMsgRxFromDevice" << portName();
     quint8 lunghezza = buffer.length();
     if (lunghezza < 1)
     {
@@ -206,6 +216,8 @@ void Rs232DevicePrivate::debug (const QString &testo)
  */
 void Rs232DevicePrivate::errorSlot(QSerialPort::SerialPortError serialPortError)
 {
+    if (m_debug)
+        qDebug() << "Error" << serialPortError;
     switch (serialPortError)
     {
     case QSerialPort::NoError:
@@ -213,6 +225,8 @@ void Rs232DevicePrivate::errorSlot(QSerialPort::SerialPortError serialPortError)
         break;
 
     case QSerialPort::ResourceError:
+    case QSerialPort::WriteError:
+    case QSerialPort::ReadError:
         debug("Converter scollegato?");
         deleteLater();
         break;

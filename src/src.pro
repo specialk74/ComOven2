@@ -14,15 +14,13 @@ CONFIG   -= app_bundle
 
 TEMPLATE = app
 
-
 SOURCES += main.cpp \
     tcpgateway.cpp \
     clientoven.cpp \
     utils.cpp \
     abstractdevice.cpp \
     rs232device.cpp \
-    rs232deviceprivate.cpp \
-    candevice.cpp
+    rs232deviceprivate.cpp
 
 HEADERS += \
     tcpgateway.h \
@@ -30,5 +28,11 @@ HEADERS += \
     utils.h \
     abstractdevice.h \
     rs232device.h \
-    rs232deviceprivate.h \
-    candevice.h
+    rs232deviceprivate.h
+
+LIBS += -lQtSerialPort
+
+unix {
+SOURCES += candevice.cpp
+HEADERS += candevice.h
+}
