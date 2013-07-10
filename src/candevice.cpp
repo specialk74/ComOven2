@@ -178,7 +178,7 @@ void CanDevice::fromDeviceSlot(int socket)
         stream << (quint8) m_frame.data[6];
         stream << (quint8) m_frame.data[7];
 
-        emit toClientsSignal(buffer);
+        fromDeviceToClients(buffer);
     }
 }
 
