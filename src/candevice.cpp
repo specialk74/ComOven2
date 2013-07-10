@@ -166,7 +166,7 @@ void CanDevice::fromDeviceSlot(int socket)
     if (read (socket, &m_frame, sizeof(m_frame)) > 0)
     {
         QByteArray buffer;
-        QDataStream stream (&buffer);
+        QDataStream stream(&buffer, QIODevice::WriteOnly);
         quint32 id = _htonl(m_frame.can_id);
         stream << (quint32) id;
         stream << (quint8) m_frame.data[0];
