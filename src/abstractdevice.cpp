@@ -116,28 +116,20 @@ void AbstractDevice::fromClientSlot (const QByteArray &buffer)
     case TIPO_RX_TCPIP_GET_ID:
     {
         QByteArray bufferToClients;
-        QDataStream stream(&bufferToClients, QIODevice::WriteOnly);
-        stream << getTipoIdFromDevice();
-        stream << 9; // Lunghezza
-        stream << 0; // Stato Interno
-        stream << m_versioneMajor;
-        stream << m_versioneMinor;
-        stream << getComStatFromDevice();
-#if 0
-        struct IdStruct msgToClients;
-        msgToClients.tipo = getTipoIdFromDevice(); // 12 (Device Rs232 Converter) o 13 (Device CAN FriendlyARM)
-        msgToClients.lunghezza = 9;
-        msgToClients.stato_interno = 0;
-        msgToClients.versione_major = m_versioneMajor;
-        msgToClients.versione_minor = m_versioneMinor;
-        msgToClients.com_stat = getComStatFromDevice();
-#endif
-        quint8 versione_device_major, versione_device_minor;
-        getVersionFromDevice(versione_device_major, versione_device_minor);
-        stream << versione_device_major;
-        stream << versione_device_minor;
+        QByteArray bufferForDevice;
 
-        // bufferToClients.fromRawData((const char *) &msgToClients, 11);
+        buildGetId (bufferForDevice);
+        QDataStream stream(&bufferToClients, QIODevice::WriteOnly);
+        stream << (quint8) getTipoIdFromDevice();
+        lunghezza = _htonl(8 + bufferForDevice.length());
+        stream << (quint32) lunghezza; // Lunghezza
+        stream << (quint8) 0; // Stato Interno
+        stream << (quint8) m_versioneMajor;
+        stream << (quint8) m_versioneMinor;
+        quint8 var;
+        foreach (var, bufferForDevice)
+            stream << var;
+
         emit toClientsSignal(bufferToClients);
     }
         break;

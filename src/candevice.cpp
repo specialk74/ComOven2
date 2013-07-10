@@ -99,17 +99,6 @@ quint8 CanDevice::getComStatFromDevice()
 }
 
 /*!
- * \brief CanDevice::getVersionFromDevice
- * \param versioneMajor
- * \param versioneMinor
- */
-void CanDevice::getVersionFromDevice (quint8 & versioneMajor, quint8 & versioneMinor)
-{
-    versioneMajor = 0;
-    versioneMinor = 0;
-}
-
-/*!
   Sequenza di comandi da mandare al sistema per configurare il device CAN
   */
 static const char *sequenzaComandi[] =
@@ -187,4 +176,10 @@ void CanDevice::fromDeviceSlot(int socket)
         buffer.append(QByteArray::fromRawData((const char *)m_frame.data, m_frame.can_dlc));
         emit toClientsSignal(buffer);
     }
+}
+
+void CanDevice::buildGetId(QByteArray & bufferForDevice)
+{
+    QDataStream stream(&bufferForDevice, QIODevice::WriteOnly);
+    stream << getComStatFromDevice();
 }

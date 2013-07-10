@@ -40,10 +40,10 @@ protected:
     virtual void toDevice (const QByteArray &buffer) = 0;
     virtual quint8 getTipoIdFromDevice() = 0;
     virtual quint8 getComStatFromDevice() = 0;
-    virtual void getVersionFromDevice (quint8 & versioneMajor, quint8 & versioneMinor) = 0;
     virtual void debug (const QString &testo);
 
     void fromDeviceToClients (const QByteArray &msgCANfromDevice);
+    virtual void buildGetId(QByteArray & bufferForDevice) = 0;
 
 private:
     bool m_debug;

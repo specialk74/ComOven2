@@ -148,3 +148,13 @@ void Rs232Device::fromDeviceSlot(const QByteArray &buffer)
 {
     fromDeviceToClients(buffer);
 }
+
+void Rs232Device::buildGetId(QByteArray & bufferForDevice)
+{
+    QDataStream stream(&bufferForDevice, QIODevice::WriteOnly);
+    stream << (quint8) getComStatFromDevice();
+    quint8 versione_device_major, versione_device_minor;
+    getVersionFromDevice(versione_device_major, versione_device_minor);
+    stream << (quint8) versione_device_major;
+    stream << (quint8) versione_device_minor;
+}
