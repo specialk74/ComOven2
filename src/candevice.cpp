@@ -168,12 +168,21 @@ void CanDevice::fromDeviceSlot(int socket)
         QByteArray buffer;
         buffer.append(fromNumberToBuffer(_htonl(m_frame.can_id)));
         buffer.append(QByteArray::fromRawData((const char *)m_frame.data, m_frame.can_dlc));
+{
+        QDebug debugBuffer = qDebug();
+        debugBuffer << headDebug << "Rx ";
+        int var;
+        foreach (var, buffer) {
+            debugBuffer << hex << var;
+        }
+}
         emit toClientsSignal(buffer);
     }
 }
 
 void CanDevice::buildGetId(QByteArray & bufferForDevice)
 {
+    qDebug() << headDebug << "buildGetId";
     QDataStream stream(&bufferForDevice, QIODevice::WriteOnly);
     stream << getComStatFromDevice();
 }
