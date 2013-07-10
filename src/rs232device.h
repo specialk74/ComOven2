@@ -14,7 +14,9 @@ public:
     ~Rs232Device ();
 
 protected:
-#define TIPO_RX_TCPIP_ID  0x0C
+    enum {
+        TIPO_RX_TCPIP_ID  = 0x0C
+    };
 
     static Rs232Device * m_Instance;
     explicit Rs232Device(QObject *parent);

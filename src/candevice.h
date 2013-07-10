@@ -3,6 +3,7 @@
 
 #include "abstractdevice.h"
 
+#include <bits/sockaddr.h>
 #include <linux/can.h>
 #include <linux/can/raw.h>
 
@@ -12,9 +13,12 @@ class CanDevice : public AbstractDevice
 public:
     static CanDevice * Instance(QObject *parent = 0, const int &port = 0);
     ~CanDevice ();
+    bool exist() { return m_exist; }
 
 protected:
-#define TIPO_RX_TCPIP_ID  0x0D
+    enum {
+        TIPO_RX_TCPIP_ID  = 0x0D
+    };
 
     static CanDevice * m_Instance;
     explicit CanDevice(QObject *parent, const int &port);
@@ -32,7 +36,7 @@ protected slots:
 private:
     int m_socketCan;
     struct can_frame m_frame;
-
+    bool m_exist;
 };
 
 #endif // CANDEVICE_H

@@ -3,7 +3,8 @@
 
 #include "utils.h"
 
-#include <QSerialPort>
+#include <QtSerialPort/QSerialPort>
+#include <QtSerialPort/QSerialPortInfo>
 #include <QTimer>
 
 class Rs232DevicePrivate : public QSerialPort
@@ -11,6 +12,7 @@ class Rs232DevicePrivate : public QSerialPort
     Q_OBJECT
 public:
     explicit Rs232DevicePrivate(const QSerialPortInfo &info, QObject *parent = 0);
+    ~Rs232DevicePrivate();
 
     void getVersion (quint8 & versioneMajor, quint8 & versioneMinor);
     void getComStat (quint8 &comstat);
