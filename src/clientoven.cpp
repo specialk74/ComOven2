@@ -22,7 +22,7 @@ void ClientOven::fromClientsSlot()
     {
         QDebug debugBuffer = qDebug();
         debugBuffer << headDebug << "Rx ";
-        int var;
+        quint8 var;
         foreach (var, buffer) {
             debugBuffer << hex << var;
         }
@@ -54,7 +54,7 @@ void ClientOven::toClientSlot (const QByteArray &buffer)
         {
             QDebug debugBuffer = qDebug();
             debugBuffer << headDebug << "Tx ";
-            int var;
+            quint8 var;
             foreach (var, buffer) {
                 debugBuffer << hex << var;
             }
