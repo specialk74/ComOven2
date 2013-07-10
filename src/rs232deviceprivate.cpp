@@ -14,7 +14,7 @@ Rs232DevicePrivate::Rs232DevicePrivate(const QSerialPortInfo &info, QObject *par
 {
     m_debug = false;
 
-    qDebug() << "CTor" << info.portName();
+    qDebug() << headDebug << "CTor" << info.portName();
 
     // Faccio partire un timer: se entro il suo timeout non ho trovato il converter mi autodistruggo
     connect (&m_timerAutodelete, SIGNAL(timeout()), this, SLOT(deleteLater()));
@@ -39,7 +39,7 @@ Rs232DevicePrivate::Rs232DevicePrivate(const QSerialPortInfo &info, QObject *par
 
 Rs232DevicePrivate::~Rs232DevicePrivate()
 {
-    qDebug() << "DTor" << portName();
+    qDebug() << headDebug << "DTor" << portName();
 }
 
 /*!
@@ -129,7 +129,7 @@ void Rs232DevicePrivate::sendMsg(const QByteArray &bufferIn)
 
     write(bufferOut);
 
-    qDebug() << "write" << portName();
+//    qDebug() << "write" << portName();
 }
 
 /*!
@@ -139,7 +139,7 @@ void Rs232DevicePrivate::sendMsg(const QByteArray &bufferIn)
  */
 void Rs232DevicePrivate::handleMsgRxFromDevice (const QByteArray & buffer)
 {
-    qDebug() << "handleMsgRxFromDevice" << portName();
+//    qDebug() << "handleMsgRxFromDevice" << portName();
     quint8 lunghezza = buffer.length();
     if (lunghezza < 1)
     {

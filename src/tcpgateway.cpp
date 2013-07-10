@@ -150,7 +150,8 @@ void TcpGateway::newConnectionSlot()
             if (m_clients.count() < MAX_CLIENTS)
             {
                 ClientOven *client = new ClientOven(this);
-                client->setSocketDescriptor(socket->socketDescriptor());
+                client->setSocket(socket);
+                client->setDebug(m_debug);
                 m_clients.insert(socket, client);
                 // Quando il client si disconnette
                 connect (socket, SIGNAL(disconnected()), this, SLOT(disconnectedSlot()));
@@ -167,6 +168,7 @@ void TcpGateway::newConnectionSlot()
         }
     }
 }
+
 
 /*!
  * \brief TcpGateway::fromDeviceSlot - Slot per gestire i dati che mi arrivano dal Device

@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
     device = CanDevice::Instance();
     if (!CanDevice::Instance()->exist())
     {
-        delete CanDevice::Instance();
+       delete CanDevice::Instance();
        device  =  connectToSerialDevice(debug);
     }
 #else

@@ -1,11 +1,14 @@
 #include "clientoven.h"
 
+static const char headDebug[] = "[ClientOven]";
+
 ClientOven::ClientOven(QObject *parent) :
-    QTcpSocket(parent)
+    QObject(parent)
 {
-    // Quando mi arrivano dei dati dal client
+    m_debug = NULL;
+    m_socket = NULL;
+    // Gestione dei dati quando arrivano da un Client
     m_statoParser = STATO_TCPIP_DLE_STX;
-    connect (this, SIGNAL(readyRead()), this, SLOT(fromClientsSlot()));
 }
 
 
@@ -14,7 +17,16 @@ ClientOven::ClientOven(QObject *parent) :
  */
 void ClientOven::fromClientsSlot()
 {
-    QByteArray buffer = readAll();
+    QByteArray buffer = m_socket->readAll();
+    if (m_debug)
+    {
+        QDebug debugBuffer = qDebug();
+        debugBuffer << headDebug << "Rx ";
+        int var;
+        foreach (var, buffer) {
+            debugBuffer << hex << var;
+        }
+    }
     int start = 0;
     int end = buffer.length();
     // Fin tanto che non sono arrivato al fondo del buffer che il client mi ha spedisco, decodifico!
@@ -36,5 +48,23 @@ void ClientOven::fromClientsSlot()
  */
 void ClientOven::toClientSlot (const QByteArray &buffer)
 {
-    write(buffer);
+    if (m_socket)
+    {
+        if (m_debug)
+        {
+            QDebug debugBuffer = qDebug();
+            debugBuffer << headDebug << "Tx ";
+            int var;
+            foreach (var, buffer) {
+                debugBuffer << hex << var;
+            }
+        }
+        m_socket->write(buffer);
+    }
+}
+
+void ClientOven::setSocket (QTcpSocket *socket)
+{
+    m_socket = socket;
+    connect (m_socket, SIGNAL(readyRead()), this, SLOT(fromClientsSlot()));
 }

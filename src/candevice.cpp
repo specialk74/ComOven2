@@ -33,6 +33,8 @@
 #define AF_CAN PF_CAN
 #endif
 
+static const char headDebug[] = "[CanDevice]";
+
 CanDevice * CanDevice::m_Instance = NULL;
 
 /*!
@@ -54,7 +56,7 @@ CanDevice * CanDevice::Instance(QObject *parent, const int &port)
  */
 CanDevice::CanDevice(QObject *parent, const int &port) : AbstractDevice (parent)
 {
-    qDebug() << "CTor CanDevice";
+    qDebug() << headDebug << "CTor";
     m_Instance = this;
     m_socketCan = 0;
     m_exist = false;
@@ -66,7 +68,7 @@ CanDevice::CanDevice(QObject *parent, const int &port) : AbstractDevice (parent)
  */
 CanDevice::~CanDevice ()
 {
-    qDebug() << "DTor CanDevice";
+    qDebug() << headDebug << "DTor";
 
     m_Instance = NULL;
     if (m_socketCan)
