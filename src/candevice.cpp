@@ -27,12 +27,6 @@
 #define AF_CAN PF_CAN
 #endif
 
-// Purtroppo nel compilatore del FriendlyARM non c'e' questa define
-#ifndef PF_CAN
-#define PF_CAN 29
-#define AF_CAN PF_CAN
-#endif
-
 static const char headDebug[] = "[CanDevice]";
 
 CanDevice * CanDevice::m_Instance = NULL;
