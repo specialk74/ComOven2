@@ -27,6 +27,8 @@
 #define AF_CAN PF_CAN
 #endif
 
+static const char headDebug[] = "[CanDevice]";
+
 CanDevice * CanDevice::m_Instance = NULL;
 
 /*!
@@ -48,7 +50,7 @@ CanDevice * CanDevice::Instance(QObject *parent, const int &port)
  */
 CanDevice::CanDevice(QObject *parent, const int &port) : AbstractDevice (parent)
 {
-    qDebug() << "CTor CanDevice";
+    qDebug() << headDebug << "CTor";
     m_Instance = this;
     m_socketCan = 0;
     m_exist = false;
@@ -60,7 +62,7 @@ CanDevice::CanDevice(QObject *parent, const int &port) : AbstractDevice (parent)
  */
 CanDevice::~CanDevice ()
 {
-    qDebug() << "DTor CanDevice";
+    qDebug() << headDebug << "DTor";
 
     m_Instance = NULL;
     if (m_socketCan)
@@ -88,17 +90,6 @@ void CanDevice::toDevice (const QByteArray &buffer)
 quint8 CanDevice::getComStatFromDevice()
 {
     return 0;
-}
-
-/*!
- * \brief CanDevice::getVersionFromDevice
- * \param versioneMajor
- * \param versioneMinor
- */
-void CanDevice::getVersionFromDevice (quint8 & versioneMajor, quint8 & versioneMinor)
-{
-    versioneMajor = 0;
-    versioneMinor = 0;
 }
 
 /*!
@@ -179,4 +170,10 @@ void CanDevice::fromDeviceSlot(int socket)
         buffer.append(QByteArray::fromRawData((const char *)m_frame.data, m_frame.can_dlc));
         emit toClientsSignal(buffer);
     }
+}
+
+void CanDevice::buildGetId(QByteArray & bufferForDevice)
+{
+    QDataStream stream(&bufferForDevice, QIODevice::WriteOnly);
+    stream << getComStatFromDevice();
 }

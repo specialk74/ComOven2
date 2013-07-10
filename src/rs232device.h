@@ -15,7 +15,7 @@ public:
 
 protected:
     enum {
-        TIPO_RX_TCPIP_ID  = 0x0C
+        TIPO_RX_TCPIP_ID  = 0x0D
     };
 
     static Rs232Device * m_Instance;
@@ -24,7 +24,9 @@ protected:
     virtual void toDevice (const QByteArray &buffer);
     virtual quint8 getTipoIdFromDevice() { return TIPO_RX_TCPIP_ID; }
     virtual quint8 getComStatFromDevice();
-    virtual void getVersionFromDevice (quint8 & versioneMajor, quint8 & versioneMinor);
+    virtual void buildGetId(QByteArray & bufferForDevice);
+
+    void getVersionFromDevice (quint8 & versioneMajor, quint8 & versioneMinor);
 
 protected slots:
     void searchSlot ();

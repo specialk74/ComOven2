@@ -74,6 +74,16 @@ const int lngHeadMsg = 5;
 void AbstractDevice::fromClientSlot (const QByteArray &buffer)
 {
     // Controllo che la lunghezza minima sia 5 (un byte per il tipo e 4 byte di lunghezza)
+    if (m_debug)
+    {
+        QDebug debugBuffer = qDebug();
+        debugBuffer << headDebug;
+        int var;
+        foreach (var, buffer) {
+            debugBuffer << hex << var;
+        }
+    }
+
     if (buffer.length() < lngHeadMsg)
     {
         debug ("Lunghezza Messaggio corta");
@@ -81,31 +91,6 @@ void AbstractDevice::fromClientSlot (const QByteArray &buffer)
     }
 
     // Recupero la lunghezza del messaggio dai dati
-#if 0
-#if 0
-    // Funziona? bge o lte?
-    lunghezza lng;
-    lng.dato[0] = buffer[1];
-    lng.dato[1] = buffer[2];
-    lng.dato[2] = buffer[3];
-    lng.dato[3] = buffer[4];
-
-    if (lng.u32 != (quint32) buffer.length())
-    {
-        debug ("Lunghezza Messaggio errata");
-        return;
-    }
-#else
-    QByteArray temp = buffer.left(lngHeadMsg);
-    temp.remove(0,1); // Tolgo il primo byte che e' il tipo
-    if (_ntohl(fromBufferToNumber (temp)) != (quint32) buffer.length())
-    {
-        QString testo = QString ("Lunghezza Messaggio errata %1-%2").arg(_ntohl(fromBufferToNumber (temp))).arg(buffer.length());
-        debug (testo);
-        return;
-    }
-#endif
-#endif
     QDataStream ds(buffer);
     quint8 comando;
     quint32 temp;
@@ -114,7 +99,7 @@ void AbstractDevice::fromClientSlot (const QByteArray &buffer)
     quint32 lunghezza = _ntohl(temp);
     if (lunghezza != (quint32) buffer.length())
     {
-        QString testo = QString ("Lunghezza Messaggio errata %1-%2").arg(lunghezza).arg(buffer.length());
+        QString testo = QString ("Lunghezza Messaggio errata %1 - %2").arg(lunghezza).arg(buffer.length());
         debug (testo);
         return;
     }
@@ -131,23 +116,27 @@ void AbstractDevice::fromClientSlot (const QByteArray &buffer)
     case TIPO_RX_TCPIP_GET_ID:
     {
         QByteArray bufferToClients;
-        struct IdStruct msgToClients;
-        msgToClients.tipo = getTipoIdFromDevice(); // 12 (Device Rs232 Converter) o 13 (Device CAN FriendlyARM)
-        msgToClients.lunghezza = 9;
-        msgToClients.stato_interno = 0;
-        msgToClients.versione_major = m_versioneMajor;
-        msgToClients.versione_minor = m_versioneMinor;
-        msgToClients.com_stat = getComStatFromDevice();
-        getVersionFromDevice(msgToClients.versione_device_major, msgToClients.versione_device_minor);
+        QByteArray bufferForDevice;
 
-        bufferToClients.fromRawData((const char *) &msgToClients, 11);
+        buildGetId (bufferForDevice);
+        QDataStream stream(&bufferToClients, QIODevice::WriteOnly);
+        stream << (quint8) getTipoIdFromDevice();
+        lunghezza = _htonl(8 + bufferForDevice.length());
+        stream << (quint32) lunghezza; // Lunghezza
+        stream << (quint8) 0; // Stato Interno
+        stream << (quint8) m_versioneMajor;
+        stream << (quint8) m_versioneMinor;
+        quint8 var;
+        foreach (var, bufferForDevice)
+            stream << var;
+
         emit toClientsSignal(bufferToClients);
     }
         break;
 
     default:
     {
-        QString testo = QString ("Messaggio sconosiuto: %1").arg(buffer[0]);
+        QString testo = QString ("Messaggio sconosciuto: %1").arg(comando);
         debug (testo);
     }
         break;
