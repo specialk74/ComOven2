@@ -43,24 +43,11 @@ union lunghezza {
 void AbstractDevice::fromDeviceToClients (const QByteArray &msgCANfromDevice)
 {
     QByteArray bufferToClients;
-    bufferToClients.append((char) TIPO_TX_TCPIP_CAN_MSG);
-#if 0
-#if 0
-    lunghezza lng;
-    lng.u32 = 17;
-    // Funziona? bge o lte?
-    bufferToClients.append(lng.dato[0]);
-    bufferToClients.append(lng.dato[1]);
-    bufferToClients.append(lng.dato[2]);
-    bufferToClients.append(lng.dato[3]);
-#else
-    bufferToClients.append(fromNumberToBuffer(_htonl((quint32) 17)));
-#endif
-#endif
-    QByteArray temp;
-    QDataStream ds(temp);
-    ds << _htonl((quint32) 17);
-    bufferToClients.append(temp);
+    {
+        QDataStream stream (&bufferToClients, QIODevice::WriteOnly);
+        stream << (quint8) TIPO_TX_TCPIP_CAN_MSG;
+        stream << _htonl((quint32) 17);
+    }
     bufferToClients.append(msgCANfromDevice);
 
     emit toClientsSignal(bufferToClients);
