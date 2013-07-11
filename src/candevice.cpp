@@ -165,6 +165,20 @@ void CanDevice::fromDeviceSlot(int socket)
 {
     if (read (socket, &m_frame, sizeof(m_frame)) > 0)
     {
+        if (getDebug())
+        {
+            QDebug debugBuffer = qDebug();
+            debugBuffer << hex << m_frame.can_id;
+            debugBuffer << hex << m_frame.data[0];
+            debugBuffer << hex << m_frame.data[1];
+            debugBuffer << hex << m_frame.data[2];
+            debugBuffer << hex << m_frame.data[3];
+            debugBuffer << hex << m_frame.data[4];
+            debugBuffer << hex << m_frame.data[5];
+            debugBuffer << hex << m_frame.data[6];
+            debugBuffer << hex << m_frame.data[7];
+        }
+
         QByteArray buffer;
         QDataStream stream(&buffer, QIODevice::WriteOnly);
         quint32 id = _htonl(m_frame.can_id);
