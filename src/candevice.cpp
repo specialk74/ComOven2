@@ -75,15 +75,28 @@ CanDevice::~CanDevice ()
  */
 void CanDevice::toDevice (const QByteArray &buffer)
 {
-    qDebug() << "Arrivo qua?";
-    memset (&m_frame, sizeof(m_frame), 0);
+    if (m_socketCan)
+    {
+        memset (&m_frame, sizeof(m_frame), 0);
 
-    m_frame.can_id = _ntohl(fromBufferToNumber(buffer) & ((1 << 29) - 1));
-    m_frame.can_id |=  CAN_EFF_FLAG;
-    m_frame.can_dlc = 8;
-    memcpy (m_frame.data, buffer.data() + 4, buffer.length() - 4);
+        QByteArray local = buffer;
+        QDataStream stream (&local, QIODevice::ReadOnly);
+        quint32 idCan;
+        stream >> idCan;
+        //m_frame.can_id = _ntohl(fromBufferToNumber(buffer) & ((1 << 29) - 1));
+        m_frame.can_id = _ntohl(idCan);
+        m_frame.can_id |=  CAN_EFF_FLAG;
+        m_frame.can_dlc = 8;
+        //memcpy (m_frame.data, buffer.data() + 4, buffer.length() - 4);
+        quint8 var;
+        for (quint8 idx = 0; idx < 8; idx++)
+        {
+            stream >> var;
+            m_frame.data [idx] = var;
+        }
 
-    write (m_socketCan, &m_frame, sizeof(m_frame));
+        write (m_socketCan, &m_frame, sizeof(m_frame));
+    }
 }
 
 /*!
