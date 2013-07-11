@@ -142,6 +142,7 @@ void Rs232Device::foundItSlot()
 
     // Non mi serve piu' saperlo
     disconnect (m_devicePrivate, SIGNAL(fondItSignal()), this, SLOT(foundItSlot()));    
+    m_devicePrivate->setDebug(getDebug());
 }
 
 void Rs232Device::fromDeviceSlot(const QByteArray &buffer)

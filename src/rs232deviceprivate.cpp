@@ -146,6 +146,16 @@ void Rs232DevicePrivate::sendMsg(const QByteArray &bufferIn)
  */
 void Rs232DevicePrivate::handleMsgRxFromDevice (const QByteArray & buffer)
 {
+    if (m_debug)
+    {
+        QDebug debugBuffer = qDebug();
+        debugBuffer << headDebug << "Rx ";
+        quint8 var;
+        foreach (var, buffer) {
+            debugBuffer << hex << var;
+        }
+    }
+
 //    qDebug() << "handleMsgRxFromDevice" << portName();
     quint8 lunghezza = buffer.length();
     if (lunghezza < 1)
