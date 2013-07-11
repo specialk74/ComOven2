@@ -75,6 +75,7 @@ CanDevice::~CanDevice ()
  */
 void CanDevice::toDevice (const QByteArray &buffer)
 {
+    qDebug() << "Arrivo qua?";
     memset (&m_frame, sizeof(m_frame), 0);
 
     m_frame.can_id = _ntohl(fromBufferToNumber(buffer) & ((1 << 29) - 1));
