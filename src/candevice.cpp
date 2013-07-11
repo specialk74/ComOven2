@@ -177,6 +177,15 @@ void CanDevice::fromDeviceSlot(int socket)
         stream << (quint8) m_frame.data[5];
         stream << (quint8) m_frame.data[6];
         stream << (quint8) m_frame.data[7];
+        if (getDebug())
+        {
+            QDebug debugBuffer = qDebug();
+            debugBuffer << headDebug << "Rx ";
+            quint8 var;
+            foreach (var, buffer) {
+                debugBuffer << hex << var;
+            }
+        }
 
         fromDeviceToClients(buffer);
     }

@@ -126,10 +126,17 @@ void Rs232DevicePrivate::sendMsg(const QByteArray &bufferIn)
     quint8 checksum = cchecksum(bufferIn);
     encode(bufferIn, bufferOut);
     bufferOut.append(~checksum);
+    if (m_debug)
+    {
+        QDebug debugBuffer = qDebug();
+        debugBuffer << headDebug << "Tx ";
+        quint8 var;
+        foreach (var, bufferOut) {
+            debugBuffer << hex << var;
+        }
+    }
 
     write(bufferOut);
-
-//    qDebug() << "write" << portName();
 }
 
 /*!
