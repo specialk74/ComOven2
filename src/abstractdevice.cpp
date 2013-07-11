@@ -50,7 +50,7 @@ void AbstractDevice::fromDeviceToClients (const QByteArray &msgCANfromDevice)
     }
     bufferToClients.append(msgCANfromDevice);
 
-    emit toClientsSignal(bufferToClients);
+    emit toClientsSignal(bufferToClients, NULL);
 }
 
 /*!
@@ -58,7 +58,7 @@ void AbstractDevice::fromDeviceToClients (const QByteArray &msgCANfromDevice)
  * \param buffer - dati che mi arrivano dal Client
  */
 const int lngHeadMsg = 5;
-void AbstractDevice::fromClientSlot (const QByteArray &buffer)
+void AbstractDevice::fromClientSlot (const QByteArray &buffer, ClientOven*client)
 {
     // Controllo che la lunghezza minima sia 5 (un byte per il tipo e 4 byte di lunghezza)
     if (m_debug)
@@ -97,6 +97,7 @@ void AbstractDevice::fromClientSlot (const QByteArray &buffer)
     {
         QByteArray bufferToDevice = buffer.right(buffer.length() - lngHeadMsg);
         toDevice (bufferToDevice);
+        emit toClientsSignal(bufferToDevice, client);
     }
         break;
 
@@ -117,7 +118,7 @@ void AbstractDevice::fromClientSlot (const QByteArray &buffer)
         foreach (var, bufferForDevice)
             stream << var;
 
-        emit toClientsSignal(bufferToClients);
+        emit toOneClientOnlySignal(bufferToClients, client);
     }
         break;
 

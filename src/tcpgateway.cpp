@@ -156,10 +156,12 @@ void TcpGateway::newConnectionSlot()
                 // Quando il client si disconnette
                 connect (socket, SIGNAL(disconnected()), this, SLOT(disconnectedSlot()));
                 // Quando devo spedire un messaggio al Client
-                connect (this, SIGNAL(toClientSignal(QByteArray, ClientOven*)), client, SLOT(toClientSlot(QByteArray, ClientOven*)));
+                connect (this, SIGNAL(toClientSignal(QByteArray, ClientOven*)),
+                         client, SLOT(toClientSlot(QByteArray, ClientOven*)));
+                connect (this, SIGNAL(toOneClientOnlySignal(QByteArray, ClientOven*)),
+                         client, SLOT(toOneClientOnlySlot(QByteArray, ClientOven*)));
                 // Quando devo spedire i dati al Device
-                connect (client, SIGNAL(toDeviceSignal(QByteArray)), this, SIGNAL(toDeviceSignal(QByteArray)));
-                connect (client, SIGNAL(toDeviceSignal(QByteArray)), this, SLOT(toOtherClients(QByteArray)));
+                connect (client, SIGNAL(toDeviceSignal(QByteArray, ClientOven*)), this, SIGNAL(toDeviceSignal(QByteArray, ClientOven*)));
             }
             else
             {
@@ -174,13 +176,13 @@ void TcpGateway::newConnectionSlot()
 /*!
  * \brief TcpGateway::fromDeviceSlot - Slot per gestire i dati che mi arrivano dal Device
  */
-void TcpGateway::fromDeviceSlot(const QByteArray &bufferDevice)
+void TcpGateway::fromDeviceSlot(const QByteArray &bufferDevice, ClientOven *client)
 {
     QByteArray buffer;
     // Lo trasformo in modo che i Client possano leggerlo corretamente
     encode (bufferDevice, buffer);
     // In questo modo lo spedisco a tutti i Clients collegati
-    emit toClientSignal(buffer, NULL);
+    emit toClientSignal(buffer, client);
 }
 
 /*!
@@ -196,8 +198,11 @@ void TcpGateway::disconnectedSlot ()
     delete client;
 }
 
-void TcpGateway::toOtherClients(const QByteArray& buffer)
+void TcpGateway::toOneClientOnlySlot(const QByteArray &bufferDevice, ClientOven *client)
 {
-    ClientOven *client = (ClientOven *) sender();
-    emit toClientSignal(buffer, client);
+    QByteArray buffer;
+    // Lo trasformo in modo che i Client possano leggerlo corretamente
+    encode (bufferDevice, buffer);
+    // In questo modo lo spedisco a tutti i Clients collegati
+    emit toOneClientOnlySignal(buffer, client);
 }

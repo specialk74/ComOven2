@@ -2,7 +2,9 @@
 #define ABSTRACTDEVICE_H
 
 #include <QObject>
+#include "clientoven.h"
 
+/*
 struct IdStruct {
     quint8 tipo;
     quint32 lunghezza;
@@ -13,7 +15,7 @@ struct IdStruct {
     quint8 versione_device_major;
     quint8 versione_device_minor;
 };
-
+*/
 class AbstractDevice : public QObject
 {
     Q_OBJECT
@@ -25,10 +27,11 @@ public:
     void setVersioneSw (const quint8 &versioneMajor, const quint8 &versioneMinor);
 
 signals:
-    void toClientsSignal (const QByteArray &buffer);
+    void toClientsSignal (const QByteArray &buffer, ClientOven *client);
+    void toOneClientOnlySignal (const QByteArray &buffer, ClientOven *client);
 
 public slots:
-    void fromClientSlot (const QByteArray &buffer);
+    void fromClientSlot (const QByteArray &buffer, ClientOven *client);
 
 protected:
 

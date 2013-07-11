@@ -15,10 +15,12 @@ public:
     void setDebug (const bool &val) { m_debug = val; }
     
 signals:
-    void toDeviceSignal (const QByteArray &);
+    void toDeviceSignal (const QByteArray &, ClientOven*);
 
 public slots:
     void toClientSlot (const QByteArray &buffer, ClientOven *client);
+    void toOneClientOnlySlot (const QByteArray &buffer, ClientOven *client);
+
     
 protected slots:
     void fromClientsSlot();
@@ -28,6 +30,8 @@ protected:
     QByteArray m_buffer;
     QTcpSocket *m_socket;
     bool m_debug;
+
+    void send (const QByteArray &buffer);
 };
 
 #endif // CLIENT_H

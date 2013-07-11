@@ -35,7 +35,7 @@ void ClientOven::fromClientsSlot()
         if (decodeTcpIpMsg (buffer, m_buffer, start, m_statoParser))
         {
             // E' stato trovato un messaggio valido completo: mando un segnale per gestirlo
-            emit toDeviceSignal(m_buffer);
+            emit toDeviceSignal(m_buffer, this);
             // Ripulisco il buffer perche' non serve piu'
             m_buffer.clear();
         }
@@ -49,19 +49,29 @@ void ClientOven::fromClientsSlot()
 void ClientOven::toClientSlot (const QByteArray &buffer, ClientOven *client)
 {
     if (m_socket && (client != this))
-    {
-        if (m_debug)
-        {
-            QDebug debugBuffer = qDebug();
-            debugBuffer << headDebug << "Tx ";
-            quint8 var;
-            foreach (var, buffer) {
-                debugBuffer << hex << var;
-            }
-        }
-        m_socket->write(buffer);
-    }
+        send(buffer);
 }
+
+void ClientOven::toOneClientOnlySlot (const QByteArray &buffer, ClientOven *client)
+{
+    if (m_socket && (client == this))
+        send(buffer);
+}
+
+void ClientOven::send (const QByteArray &buffer)
+{
+    if (m_debug)
+    {
+        QDebug debugBuffer = qDebug();
+        debugBuffer << headDebug << "Tx ";
+        quint8 var;
+        foreach (var, buffer) {
+            debugBuffer << hex << var;
+        }
+    }
+    m_socket->write(buffer);
+}
+
 
 void ClientOven::setSocket (QTcpSocket *socket)
 {

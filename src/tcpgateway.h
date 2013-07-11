@@ -23,16 +23,17 @@ public:
     bool startListen (void);
 
 public slots:
-    void fromDeviceSlot (const QByteArray &bufferDevice);
+    void fromDeviceSlot (const QByteArray &bufferDevice, ClientOven *);
+    void toOneClientOnlySlot (const QByteArray &bufferDevice, ClientOven *);
 
 signals:
-    void toDeviceSignal (const QByteArray &);
+    void toDeviceSignal (const QByteArray &, ClientOven*);
     void toClientSignal (const QByteArray &, ClientOven *);
+    void toOneClientOnlySignal (const QByteArray &, ClientOven *);
 
 protected slots:
     void newConnectionSlot();
     void disconnectedSlot();
-    void toOtherClients(const QByteArray& buffer);
 
 protected:
     explicit TcpGateway(QObject *parent);

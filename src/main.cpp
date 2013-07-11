@@ -13,8 +13,8 @@
 const char projectName[] = "ComOven2";
 const int portServer = 6800;
 
-static const int versioneMajor = 1;
-static const int versioneMinor = 0;
+static const int versioneMajor = 0;
+static const int versioneMinor = 1;
 
 QString getVersion ()
 {
@@ -113,8 +113,13 @@ int main(int argc, char *argv[])
 
     if (device)
     {
-        QObject::connect (TcpGateway::Instance(), SIGNAL(toDeviceSignal(QByteArray)), device, SLOT(fromClientSlot(QByteArray)));
-        QObject::connect (device, SIGNAL(toClientsSignal(QByteArray)), TcpGateway::Instance(), SLOT(fromDeviceSlot(QByteArray)));
+        device->setVersioneSw(versioneMajor, versioneMinor);
+        QObject::connect (TcpGateway::Instance(), SIGNAL(toDeviceSignal(QByteArray, ClientOven*)),
+                          device, SLOT(fromClientSlot(QByteArray, ClientOven*)));
+        QObject::connect (device, SIGNAL(toClientsSignal(QByteArray, ClientOven*)),
+                          TcpGateway::Instance(), SLOT(fromDeviceSlot(QByteArray, ClientOven *)));
+        QObject::connect (device, SIGNAL(toOneClientOnlySignal(QByteArray, ClientOven*)),
+                          TcpGateway::Instance(), SLOT(toOneClientOnlySlot(QByteArray,ClientOven*)));
     }
 
     return app.exec();
