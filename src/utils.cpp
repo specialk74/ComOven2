@@ -198,7 +198,7 @@ quint32 fromBufferToNumber (const QByteArray &buffer)
     QDataStream ds (buffer);
     quint32 temp;
     ds >> temp;
-    return _ntohl(temp);
+    return (temp);
 }
 
 QByteArray fromNumberToBuffer (quint32 number)
