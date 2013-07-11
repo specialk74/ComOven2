@@ -18,7 +18,7 @@ signals:
     void toDeviceSignal (const QByteArray &);
 
 public slots:
-    void toClientSlot (const QByteArray &buffer);
+    void toClientSlot (const QByteArray &buffer, ClientOven *client);
     
 protected slots:
     void fromClientsSlot();

@@ -27,11 +27,12 @@ public slots:
 
 signals:
     void toDeviceSignal (const QByteArray &);
-    void toClientSignal (const QByteArray &);
+    void toClientSignal (const QByteArray &, ClientOven *);
 
 protected slots:
     void newConnectionSlot();
     void disconnectedSlot();
+    void toOtherClients(const QByteArray& buffer);
 
 protected:
     explicit TcpGateway(QObject *parent);

@@ -46,9 +46,9 @@ void ClientOven::fromClientsSlot()
  * \brief ClientOven::toClient
  * \param buffer - buffer da spedire al Client: non devo fare nulla perche' e' gia' stato codificato da TcpGateway
  */
-void ClientOven::toClientSlot (const QByteArray &buffer)
+void ClientOven::toClientSlot (const QByteArray &buffer, ClientOven *client)
 {
-    if (m_socket)
+    if (m_socket && (client != this))
     {
         if (m_debug)
         {

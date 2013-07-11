@@ -156,9 +156,10 @@ void TcpGateway::newConnectionSlot()
                 // Quando il client si disconnette
                 connect (socket, SIGNAL(disconnected()), this, SLOT(disconnectedSlot()));
                 // Quando devo spedire un messaggio al Client
-                connect (this, SIGNAL(toClientSignal(QByteArray)), client, SLOT(toClientSlot(QByteArray)));
+                connect (this, SIGNAL(toClientSignal(QByteArray, ClientOven*)), client, SLOT(toClientSlot(QByteArray, ClientOven*)));
                 // Quando devo spedire i dati al Device
                 connect (client, SIGNAL(toDeviceSignal(QByteArray)), this, SIGNAL(toDeviceSignal(QByteArray)));
+                connect (client, SIGNAL(toDeviceSignal(QByteArray)), this, SLOT(toOtherClients(QByteArray)));
             }
             else
             {
@@ -179,7 +180,7 @@ void TcpGateway::fromDeviceSlot(const QByteArray &bufferDevice)
     // Lo trasformo in modo che i Client possano leggerlo corretamente
     encode (bufferDevice, buffer);
     // In questo modo lo spedisco a tutti i Clients collegati
-    emit toClientSignal(buffer);
+    emit toClientSignal(buffer, NULL);
 }
 
 /*!
@@ -193,4 +194,10 @@ void TcpGateway::disconnectedSlot ()
     ClientOven *client = m_clients[socket];
     m_clients.remove(socket);
     delete client;
+}
+
+void TcpGateway::toOtherClients(const QByteArray& buffer)
+{
+    ClientOven *client = (ClientOven *) sender();
+    emit toClientSignal(buffer, client);
 }
