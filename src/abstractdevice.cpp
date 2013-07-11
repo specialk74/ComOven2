@@ -97,7 +97,7 @@ void AbstractDevice::fromClientSlot (const QByteArray &buffer, ClientOven*client
     {
         QByteArray bufferToDevice = buffer.right(buffer.length() - lngHeadMsg);
         toDevice (bufferToDevice);
-        emit toClientsSignal(bufferToDevice, client);
+        emit toClientsSignal(buffer, client);
     }
         break;
 
