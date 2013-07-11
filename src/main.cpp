@@ -114,6 +114,7 @@ int main(int argc, char *argv[])
     if (device)
     {
         device->setVersioneSw(versioneMajor, versioneMinor);
+        device->setDebug(debug);
         QObject::connect (TcpGateway::Instance(), SIGNAL(toDeviceSignal(QByteArray, ClientOven*)),
                           device, SLOT(fromClientSlot(QByteArray, ClientOven*)));
         QObject::connect (device, SIGNAL(toClientsSignal(QByteArray, ClientOven*)),
