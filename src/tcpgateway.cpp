@@ -75,6 +75,19 @@ void TcpGateway::debug (const QString &testo)
         qDebug() << headDebug << qPrintable(testo);
 }
 
+/*!
+ * \brief TcpGateway::deleteClient - Metodo per cancellare i client dalla lista e il relativo socket
+ */
+void TcpGateway::deleteClient(QTcpSocket *socket)
+{
+    ClientOven *client = m_clients[socket];
+    m_clients.remove(socket);
+    disconnect(client);
+    disconnect(socket);
+    delete client;
+    socket->deleteLater();
+}
+
 #if 0
 void TcpGateway::incomingConnection(int handle)
 {
@@ -153,8 +166,10 @@ void TcpGateway::newConnectionSlot()
                 client->setSocket(socket);
                 client->setDebug(m_debug);
                 m_clients.insert(socket, client);
-                // Quando il client si disconnette
-                connect (socket, SIGNAL(disconnected()), this, SLOT(disconnectedSlot()));
+
+                // Quando c'e' qualche errore nel network
+                connect (socket, SIGNAL(error(QAbstractSocket::SocketError)),
+                         this, SLOT(erroSocketSlot(QAbstractSocket::SocketError)));
                 // Quando devo spedire un messaggio al Client
                 connect (this, SIGNAL(toClientSignal(QByteArray, ClientOven*)),
                          client, SLOT(toClientSlot(QByteArray, ClientOven*)));
@@ -166,7 +181,8 @@ void TcpGateway::newConnectionSlot()
             else
             {
                 debug("Close New Connection");
-                socket->close();
+                //socket->close();
+                delete socket;
             }
         }
     }
@@ -186,18 +202,8 @@ void TcpGateway::fromDeviceSlot(const QByteArray &bufferDevice, ClientOven *clie
 }
 
 /*!
- * \brief TcpGateway::disconnectedSlot - Slot per eliminare il riferimento al client che era connesso
+ * \brief TcpGateway::toOneClientOnlySlot - Slot per gestire la comunicazione con un solo Client
  */
-void TcpGateway::disconnectedSlot ()
-{
-    QTcpSocket *socket = (QTcpSocket *) sender();
-    QString testo = QString ("Client %1 disconnected").arg(socket->peerAddress().toString());
-    debug(testo);
-    ClientOven *client = m_clients[socket];
-    m_clients.remove(socket);
-    delete client;
-}
-
 void TcpGateway::toOneClientOnlySlot(const QByteArray &bufferDevice, ClientOven *client)
 {
     QByteArray buffer;
@@ -205,4 +211,15 @@ void TcpGateway::toOneClientOnlySlot(const QByteArray &bufferDevice, ClientOven 
     encode (bufferDevice, buffer);
     // In questo modo lo spedisco a tutti i Clients collegati
     emit toOneClientOnlySignal(buffer, client);
+}
+
+/*!
+ * \brief TcpGateway::erroSocketSlot - Slot per gestire gli errori del socket
+ */
+void TcpGateway::erroSocketSlot(QAbstractSocket::SocketError)
+{
+    QTcpSocket *socket = (QTcpSocket *) sender();
+    QString testo = QString ("Client %1 error").arg(socket->peerAddress().toString());
+    debug(testo);
+    deleteClient(socket);
 }

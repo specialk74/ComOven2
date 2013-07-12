@@ -33,9 +33,10 @@ signals:
 
 protected slots:
     void newConnectionSlot();
-    void disconnectedSlot();
+    void erroSocketSlot(QAbstractSocket::SocketError);
 
 protected:
+    void deleteClient(QTcpSocket *socket);
     explicit TcpGateway(QObject *parent);
     static TcpGateway * m_Instance;
     //void incomingConnection(int handle);

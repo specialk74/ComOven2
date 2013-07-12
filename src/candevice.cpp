@@ -211,7 +211,6 @@ void CanDevice::fromDeviceSlot(int socket)
 
 void CanDevice::buildGetId(QByteArray & bufferForDevice)
 {
-    qDebug() << headDebug << "buildGetId";
     QDataStream stream(&bufferForDevice, QIODevice::WriteOnly);
     stream << getComStatFromDevice();
 }

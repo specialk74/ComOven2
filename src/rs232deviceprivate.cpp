@@ -29,8 +29,9 @@ Rs232DevicePrivate::Rs232DevicePrivate(const QSerialPortInfo &info, QObject *par
         m_statoParser = STATO_RS232_DLE_STX;
         m_checksum = 0;
 
-        connect(this, SIGNAL(error(QSerialPort::SerialPortError)), this, SLOT(errorSlot(QSerialPort::SerialPortError)));
-        connect (this, SIGNAL(readyRead()), this, SLOT(fromDeviceSlot()));
+        connect(this, SIGNAL(error(QSerialPort::SerialPortError)),
+                this, SLOT(errorSlot(QSerialPort::SerialPortError)));
+        connect(this, SIGNAL(readyRead()), this, SLOT(fromDeviceSlot()));
 
         // Spedisco il messaggio per sapere se e' collegato un converter
         sendMsgGetId();
