@@ -17,7 +17,7 @@ public:
     void getVersion (quint8 & versioneMajor, quint8 & versioneMinor);
     void getComStat (quint8 &comstat);
     void sendMsgCan (const QByteArray &msgCAN);
-    void setDebug (const bool &val) { m_debug = val; }
+    void setDebug (const bool &val);
 
 signals:
     void fondItSignal();

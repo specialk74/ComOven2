@@ -42,6 +42,11 @@ Rs232DevicePrivate::~Rs232DevicePrivate()
 {
     qDebug() << headDebug << "DTor" << portName();
 }
+    
+void Rs232DevicePrivate::setDebug (const bool &val) 
+{
+	m_debug = val; 
+}
 
 /*!
  * \brief Rs232DevicePrivate::configPort - Parametri per configurare la porta seriale
@@ -138,6 +143,7 @@ void Rs232DevicePrivate::sendMsg(const QByteArray &bufferIn)
     }
 
     write(bufferOut);
+    flush();
 }
 
 /*!

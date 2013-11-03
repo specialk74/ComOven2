@@ -6,9 +6,9 @@
 #include "tcpgateway.h"
 #include "rs232device.h"
 
-#ifdef Q_OS_LINUX
-#include "candevice.h"
-#endif // Q_OS_LINUX
+#ifdef Q_WS_QWS
+  #include "candevice.h"
+#endif // #ifdef Q_WS_QWS
 
 const char projectName[] = "ComOven2";
 const int portServer = 6800;
@@ -100,16 +100,16 @@ int main(int argc, char *argv[])
 
     AbstractDevice * device = NULL;
 
-#ifdef Q_OS_LINUX
+#ifdef Q_WS_QWS
     device = CanDevice::Instance();
     if (!CanDevice::Instance()->exist())
     {
        delete CanDevice::Instance();
        device  =  connectToSerialDevice(debug);
     }
-#else
+#else // #ifdef Q_WS_QWS
     device = connectToSerialDevice(debug);
-#endif // Q_OS_LINUX
+#endif // #ifdef Q_WS_QWS
 
     if (device)
     {
